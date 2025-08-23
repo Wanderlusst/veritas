@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
-import { useBlogData } from '@/hooks/useBlogData';
 
 interface Post {
   _id: string;
@@ -29,7 +28,7 @@ interface BlogListProps {
   hasMore: boolean;
 }
 
-export default function BlogList({ initialPosts, totalPosts, hasMore: initialHasMore }: BlogListProps) {
+export default function BlogList({ initialPosts, hasMore: initialHasMore }: BlogListProps) {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(false);
@@ -52,41 +51,7 @@ export default function BlogList({ initialPosts, totalPosts, hasMore: initialHas
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Memoized fetch function to prevent recreation
-  const fetchPosts = useCallback(async (force = false) => {
-    const params = new URLSearchParams({
-      page: currentPage.toString(),
-      limit: '10'
-    });
-    
-    if (debouncedSearchTerm) {
-      params.append('search', debouncedSearchTerm);
-    }
 
-    const paramsString = params.toString();
-    
-    // Skip fetch if same params and not forced, and not initial mount
-    if (!force && !isInitialMount.current && lastFetchParams.current === paramsString) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      
-      const response = await fetch(`/api/posts?${paramsString}`);
-      if (response.ok) {
-        const data = await response.json();
-        setPosts(data.posts);
-        setPagination(data.pagination);
-        setHasMore(data.posts.length === 10);
-        lastFetchParams.current = paramsString;
-      }
-    } catch (error) {
-      // Silent error handling for production
-    } finally {
-      setLoading(false);
-    }
-  }, [debouncedSearchTerm, currentPage]);
 
   // Only fetch when search term changes or page changes (not on initial mount)
   useEffect(() => {
@@ -96,9 +61,45 @@ export default function BlogList({ initialPosts, totalPosts, hasMore: initialHas
     }
     
     if (debouncedSearchTerm || currentPage > 1) {
-      fetchPosts();
+      // Define fetchPosts inline to avoid dependency issues
+      const fetchPostsInline = async () => {
+        const params = new URLSearchParams({
+          page: currentPage.toString(),
+          limit: '10'
+        });
+        
+        if (debouncedSearchTerm) {
+          params.append('search', debouncedSearchTerm);
+        }
+
+        const paramsString = params.toString();
+        
+        // Skip fetch if same params and not forced, and not initial mount
+        if (!isInitialMount.current && lastFetchParams.current === paramsString) {
+          return;
+        }
+
+        try {
+          setLoading(true);
+          
+          const response = await fetch(`/api/posts?${paramsString}`);
+          if (response.ok) {
+            const data = await response.json();
+            setPosts(data.posts);
+            setPagination(data.pagination);
+            setHasMore(data.posts.length === 10);
+            lastFetchParams.current = paramsString;
+          }
+        } catch (error) {
+          console.error('Error fetching posts:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      fetchPostsInline();
     }
-  }, [debouncedSearchTerm, currentPage, fetchPosts]);
+  }, [debouncedSearchTerm, currentPage]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
