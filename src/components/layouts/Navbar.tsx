@@ -22,7 +22,7 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="text-2xl font-bold text-gray-900 hover:text-gray-700 transition-all duration-300">
-              Postify
+              Resources
             </Link>
           </div>
 
@@ -89,7 +89,7 @@ export default function Navbar() {
             <div className="absolute left-0 top-0 h-full w-full bg-white">
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
-                <h2 className="text-2xl font-bold text-gray-900">Postify</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Resources</h2>
                 <button
                   onClick={toggleMenu}
                   className="p-2 rounded-full bg-white hover:bg-gray-100 transition-colors duration-200 border border-gray-200"

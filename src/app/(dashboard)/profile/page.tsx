@@ -76,6 +76,7 @@ export default function Profile() {
       });
 
       const data = await response.json();
+      console.log('Profile update response:', data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Something went wrong');
@@ -136,6 +137,7 @@ export default function Profile() {
       });
 
       const data = await response.json();
+      console.log('Password update response:', data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Something went wrong');
