@@ -1,0 +1,13 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Clean white background -->
+  <rect width="32" height="32" fill="white"/>
+  
+  <!-- Modern pen icon -->
+  <path d="M8 22L12 18L20 26L16 30L8 22Z" fill="black"/>
+  
+  <!-- Pen tip -->
+  <path d="M20 26L24 22L26 24L22 28L20 26Z" fill="black"/>
+  
+  <!-- Simple flowing line representing ideas -->
+  <path d="M6 8C6 8 10 6 16 6C22 6 26 8 26 8" stroke="black" stroke-width="2" stroke-linecap="round"/>
+</svg>

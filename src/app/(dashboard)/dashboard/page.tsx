@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
+import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal';
 
 interface Post {
   _id: string;
@@ -19,6 +20,21 @@ export default function Dashboard() {
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    postId: string | null;
+    postTitle: string;
+  }>({
+    isOpen: false,
+    postId: null,
+    postTitle: ''
+  });
+  const [deleting, setDeleting] = useState(false);
+
+  const POSTS_PER_PAGE = 10;
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -31,43 +47,94 @@ export default function Dashboard() {
     fetchPosts();
   }, [session, status, router]);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (page = 1, append = false) => {
     try {
-      const response = await fetch('/api/posts/my-posts');
+      if (page === 1) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      const response = await fetch(`/api/posts/my-posts?page=${page}&limit=${POSTS_PER_PAGE}`);
       if (response.ok) {
         const data = await response.json();
-        setPosts(data.posts);
+        
+        if (append) {
+          setPosts(prev => [...prev, ...data.posts]);
+        } else {
+          setPosts(data.posts);
+        }
+        
+        setHasMore(data.posts.length === POSTS_PER_PAGE);
+        setCurrentPage(page);
       }
     } catch (error) {
       console.error('Error fetching posts:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
-  const deletePost = async (postId: string) => {
-    if (!confirm('Are you sure you want to delete this post?')) return;
+  const loadMore = () => {
+    if (!loadingMore && hasMore) {
+      fetchPosts(currentPage + 1, true);
+    }
+  };
 
+  const openDeleteModal = (postId: string, postTitle: string) => {
+    setDeleteModal({
+      isOpen: true,
+      postId,
+      postTitle
+    });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({
+      isOpen: false,
+      postId: null,
+      postTitle: ''
+    });
+  };
+
+  const deletePost = async () => {
+    if (!deleteModal.postId) return;
+    
+    setDeleting(true);
     try {
-      const response = await fetch(`/api/posts/${postId}`, {
+      const response = await fetch(`/api/posts/${deleteModal.postId}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
-        setPosts(posts.filter(post => post._id !== postId));
+        setPosts(posts.filter(post => post._id !== deleteModal.postId));
+        closeDeleteModal();
       } else {
         alert('Failed to delete post');
       }
     } catch (error) {
       console.error('Error deleting post:', error);
       alert('Failed to delete post');
+    } finally {
+      setDeleting(false);
     }
+  };
+
+  // Function to strip HTML tags and get clean text
+  const stripHtmlTags = (html: string) => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
   };
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
@@ -77,86 +144,142 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="mt-2 text-gray-600">
-          Welcome back, {session.user?.name}! Manage your blog posts here.
-        </p>
-      </div>
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <div className="border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 sm:mb-4">Dashboard</h1>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl">
+              Welcome back, <span className="font-semibold text-gray-900">{session.user?.name}</span>! 
+              Manage your stories and share your ideas with the world.
+            </p>
+          </div>
 
-      <div className="mb-6">
-        <Link
-          href="/dashboard/new-post"
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Create New Post
-        </Link>
-      </div>
-
-      {loading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white p-6 rounded-lg shadow animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
-              <div className="h-3 bg-gray-200 rounded w-1/4"></div>
-            </div>
-          ))}
+          <Link
+            href="/dashboard/new-post"
+            className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gray-900 text-white rounded-full hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-all duration-200 text-base sm:text-lg font-medium"
+          >
+            <svg className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Create New Story
+          </Link>
         </div>
-      ) : posts.length === 0 ? (
-        <div className="text-center py-12">
-          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No posts</h3>
-          <p className="mt-1 text-sm text-gray-500">Get started by creating your first blog post.</p>
-          <div className="mt-6">
+      </div>
+
+      {/* Content */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        {loading ? (
+          <div className="space-y-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="animate-pulse">
+                <div className="h-6 sm:h-8 bg-gray-200 rounded w-3/4 mb-3 sm:mb-4"></div>
+                <div className="h-4 sm:h-5 bg-gray-200 rounded w-1/2 mb-4 sm:mb-6"></div>
+                <div className="h-4 bg-gray-200 rounded w-full mb-2 sm:mb-3"></div>
+                <div className="h-4 bg-gray-200 rounded w-2/3 mb-2 sm:mb-3"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+              </div>
+            ))}
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="text-center py-16 sm:py-20">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8">
+              <svg className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3 sm:mb-4">No stories yet</h3>
+            <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-md mx-auto">
+              Start your writing journey by creating your first story. Share your thoughts, ideas, and experiences with the world.
+            </p>
             <Link
               href="/dashboard/new-post"
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-all duration-200 text-base sm:text-lg font-medium"
             >
-              Create Post
+              <svg className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Create Your First Story
             </Link>
           </div>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {posts.map((post) => (
-            <div key={post._id} className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">{post.title}</h3>
-                  <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                  <div className="text-sm text-gray-500">
-                    Created: {formatDate(post.createdAt)}
-                    {post.updatedAt !== post.createdAt && (
-                      <span className="ml-4">Updated: {formatDate(post.updatedAt)}</span>
-                    )}
+        ) : (
+          <div className="space-y-8 sm:space-y-12">
+            {posts.map((post) => (
+              <article key={post._id} className="group">
+                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
+                  <div className="flex-1 mb-4 lg:mb-0">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 group-hover:text-gray-700 transition-colors duration-200">
+                      {post.title}
+                    </h3>
+                    <p className="text-base sm:text-lg text-gray-600 mb-4 sm:mb-6 leading-relaxed max-w-3xl">
+                      {stripHtmlTags(post.excerpt)}
+                    </p>
+                    <div className="text-sm text-gray-500">
+                      <span>Created {formatDate(post.createdAt)}</span>
+                      {post.updatedAt !== post.createdAt && (
+                        <span className="ml-2 sm:ml-4">• Updated {formatDate(post.updatedAt)}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 lg:ml-8">
+                    <Link
+                      href={`/dashboard/edit-post/${post._id}`}
+                      className="px-4 sm:px-6 py-2 sm:py-3 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors duration-200 text-center"
+                    >
+                      Edit
+                    </Link>
+                    <button
+                      onClick={() => openDeleteModal(post._id, post.title)}
+                      className="px-4 sm:px-6 py-2 sm:py-3 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100 transition-colors duration-200"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
-                <div className="flex space-x-2 ml-4">
-                  <Link
-                    href={`/dashboard/edit-post/${post._id}`}
-                    className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    Edit
-                  </Link>
-                  <button
-                    onClick={() => deletePost(post._id)}
-                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                  >
-                    Delete
-                  </button>
-                </div>
+              </article>
+            ))}
+
+            {/* Load More Button */}
+            {hasMore && (
+              <div className="text-center pt-8">
+                <button
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="px-8 py-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium"
+                >
+                  {loadingMore ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700 mr-2"></div>
+                      Loading...
+                    </div>
+                  ) : (
+                    'Load More Stories'
+                  )}
+                </button>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            )}
+
+            {/* Pagination Info */}
+            {posts.length > 0 && (
+              <div className="text-center text-sm text-gray-500 pt-4 border-t border-gray-100">
+                Showing {posts.length} {posts.length === 1 ? 'story' : 'stories'}
+                {hasMore && ` • Click "Load More" to see more`}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={deletePost}
+        title="Delete Story"
+        message={`Are you sure you want to delete "${deleteModal.postTitle}"? This action cannot be undone.`}
+        loading={deleting}
+      />
     </div>
   );
 }

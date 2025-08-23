@@ -17,11 +17,31 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
+    // Get pagination parameters
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const skip = (page - 1) * limit;
+
+    // Get total count
+    const total = await Post.countDocuments({ author: session.user.id });
+
+    // Get posts with pagination
     const posts = await Post.find({ author: session.user.id })
       .sort({ createdAt: -1 })
-      .select('title excerpt createdAt updatedAt');
+      .select('title excerpt createdAt updatedAt')
+      .skip(skip)
+      .limit(limit);
 
-    return NextResponse.json({ posts });
+    return NextResponse.json({ 
+      posts,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (error: any) {
     console.error('Error fetching posts:', error);
     return NextResponse.json(

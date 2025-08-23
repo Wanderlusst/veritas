@@ -9,8 +9,8 @@ interface Connection {
 const connection: Connection = {};
 
 async function connectDB() {
-  // Don't connect during build time
-  if (process.env.NODE_ENV === 'production' && typeof window === 'undefined') {
+  // Only connect if we're not in a browser environment
+  if (typeof window !== 'undefined') {
     return;
   }
 

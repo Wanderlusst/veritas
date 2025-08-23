@@ -1,28 +1,57 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState, useCallback } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import RichTextEditor from '@/components/ui/RichTextEditor';
+import { formatDate } from '@/lib/utils';
 
 interface Post {
   _id: string;
   title: string;
   content: string;
   author: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function EditPost() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const params = useParams();
+  const [post, setPost] = useState<Post | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     content: ''
   });
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const params = useParams();
-  const router = useRouter();
-  const { data: session, status } = useSession();
+  const [error, setError] = useState('');
+
+  const fetchPost = useCallback(async () => {
+    if (!params.id) return;
+    
+    try {
+      const response = await fetch(`/api/posts/${params.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setPost(data.post);
+        setFormData({
+          title: data.post.title,
+          content: data.post.content
+        });
+      } else {
+        setError('Failed to load post');
+      }
+    } catch (error) {
+      console.error('Error fetching post:', error);
+      setError('Failed to load post');
+    } finally {
+      setLoading(false);
+    }
+  }, [params.id]);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -35,35 +64,7 @@ export default function EditPost() {
     if (params.id) {
       fetchPost();
     }
-  }, [session, status, router, params.id]);
-
-  const fetchPost = async () => {
-    try {
-      const response = await fetch(`/api/posts/${params.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        const post = data.post;
-        
-        // Check if user can edit this post
-        if (post.author._id !== session?.user.id && session?.user.role !== 'admin') {
-          router.push('/dashboard');
-          return;
-        }
-        
-        setFormData({
-          title: post.title,
-          content: post.content
-        });
-      } else {
-        setError('Post not found');
-      }
-    } catch (error) {
-      console.error('Error fetching post:', error);
-      setError('Failed to load post');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [session, status, router, fetchPost]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -74,16 +75,30 @@ export default function EditPost() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setError('');
     setSaving(true);
 
-    if (!formData.title.trim() || !formData.content.trim()) {
-      setError('Title and content are required');
-      setSaving(false);
-      return;
-    }
-
     try {
+      // Validate form data
+      if (!formData.title.trim()) {
+        setError('Title is required');
+        setSaving(false);
+        return;
+      }
+
+      if (!formData.content.trim()) {
+        setError('Content is required');
+        setSaving(false);
+        return;
+      }
+
+      if (formData.content.trim().length < 10) {
+        setError('Content must be at least 10 characters long');
+        setSaving(false);
+        return;
+      }
+
       const response = await fetch(`/api/posts/${params.id}`, {
         method: 'PUT',
         headers: {
@@ -98,9 +113,11 @@ export default function EditPost() {
         throw new Error(data.message || 'Something went wrong');
       }
 
+      // Success - redirect to dashboard
       router.push('/dashboard');
     } catch (error: any) {
-      setError(error.message);
+      console.error('Form submission error:', error);
+      setError(error.message || 'Failed to save post. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -108,8 +125,11 @@ export default function EditPost() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
@@ -118,52 +138,47 @@ export default function EditPost() {
     return null;
   }
 
-  if (error) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Error</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-          >
-            Back to Dashboard
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Edit Post</h1>
-            <p className="mt-2 text-gray-600">
-              Update your blog post
-            </p>
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <div className="border-b border-gray-100">
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">Edit Story</h1>
+              <p className="text-lg text-gray-600">
+                Update your story and share it with the world
+              </p>
+            </div>
+            <Link
+              href="/dashboard"
+              className="px-6 py-3 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors duration-200"
+            >
+              Back to Dashboard
+            </Link>
           </div>
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Back to Dashboard
-          </Link>
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-lg">
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+      {/* Form */}
+      <div className="max-w-4xl mx-auto px-6 py-12">
+        <form 
+          onSubmit={handleSubmit} 
+          className="space-y-8"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+              e.preventDefault();
+            }
+          }}
+        >
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="title" className="block text-lg font-medium text-gray-900 mb-3">
               Title
             </label>
             <input
@@ -172,46 +187,42 @@ export default function EditPost() {
               name="title"
               value={formData.title}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter post title"
+              className="w-full px-6 py-4 text-lg border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
+              placeholder="Enter your story title"
               maxLength={100}
               required
             />
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-gray-500">
               {formData.title.length}/100 characters
             </p>
           </div>
 
           <div>
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="content" className="block text-lg font-medium text-gray-900 mb-3">
               Content
             </label>
-            <textarea
-              id="content"
-              name="content"
-              value={formData.content}
-              onChange={handleChange}
-              rows={15}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Write your post content here..."
-              required
+            <RichTextEditor
+              key={params.id as string}
+              content={formData.content}
+              onChange={(content) => setFormData({ ...formData, content })}
+              placeholder="Start writing your story..."
             />
-            <p className="mt-1 text-sm text-gray-500">
-              Minimum 10 characters required
+            <p className="mt-2 text-sm text-gray-500">
+              Minimum 10 characters required. {formData.content.length} characters written.
             </p>
           </div>
 
-          <div className="flex justify-end space-x-3">
+          <div className="flex justify-end space-x-4 pt-8 border-t border-gray-100">
             <Link
               href="/dashboard"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-8 py-3 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors duration-200"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-3 bg-gray-900 text-white rounded-full hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>

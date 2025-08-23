@@ -7,8 +7,11 @@ import { SessionProvider } from '@/components/providers/SessionProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'FairCode Blog',
-  description: 'A modern blog application built with Next.js',
+  title: 'Veritas - Platform for Truth',
+  description: 'A platform for sharing truth, knowledge, and authentic stories with elegant minimalist design.',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({
@@ -18,6 +21,21 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  for(let registration of registrations) {
+                    registration.unregister();
+                  }
+                });
+              }
+            `,
+          }}
+        />
+      </head>
       <body className={inter.className}>
         <SessionProvider>
           <Navbar />
