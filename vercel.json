@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "veritas",
+  "name": "postify",
   "functions": {
     "src/app/api/**/*.ts": {
       "maxDuration": 30
