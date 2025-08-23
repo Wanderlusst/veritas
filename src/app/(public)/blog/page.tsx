@@ -3,33 +3,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
-
-interface Post {
-  _id: string;
-  title: string;
-  excerpt: string;
-  author: {
-    _id: string;
-    name: string;
-  };
-  createdAt: string;
-}
-
-interface Pagination {
-  page: number;
-  limit: number;
-  total: number;
-  pages: number;
-}
+import { useBlogData } from '@/hooks/useBlogData';
 
 export default function Blog() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [pagination, setPagination] = useState<Pagination | null>(null);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [progress, setProgress] = useState(0);
+  
+  // Use SWR hook for data fetching with caching
+  const { posts, pagination, isLoading, hasCachedData } = useBlogData(currentPage, debouncedSearchTerm);
   
   // Use refs to prevent unnecessary re-renders
   const isInitialMount = useRef(true);
@@ -45,60 +28,20 @@ export default function Blog() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Memoized fetch function to prevent recreation
-  const fetchPosts = useCallback(async (force = false) => {
-    const params = new URLSearchParams({
-      page: currentPage.toString(),
-      limit: '10'
-    });
-    
-    if (debouncedSearchTerm) {
-      params.append('search', debouncedSearchTerm);
-    }
-
-    const paramsString = params.toString();
-    
-    // Skip fetch if same params and not forced, and not initial mount
-    if (!force && !isInitialMount.current && lastFetchParams.current === paramsString) {
-      return;
-    }
-
-    try {
-      setLoading(true);
+  // Show progress only when loading fresh data
+  useEffect(() => {
+    if (isLoading && !hasCachedData) {
       setProgress(0);
-      
-      // Simulate progress for better UX
       const progressInterval = setInterval(() => {
         setProgress(prev => Math.min(prev + 10, 90));
       }, 100);
-
-      const response = await fetch(`/api/posts?${paramsString}`);
-      if (response.ok) {
-        const data = await response.json();
-        setPosts(data.posts);
-        setPagination(data.pagination);
-        setProgress(100);
-        lastFetchParams.current = paramsString;
-      }
       
-      clearInterval(progressInterval);
-    } catch (error) {
-      // Silent error handling for production
-    } finally {
-      setLoading(false);
-      setTimeout(() => setProgress(0), 500); // Hide progress bar after completion
+      return () => clearInterval(progressInterval);
+    } else if (!isLoading) {
+      setProgress(100);
+      setTimeout(() => setProgress(0), 500);
     }
-  }, [debouncedSearchTerm, currentPage]);
-
-  // Only fetch on mount and when dependencies actually change
-  useEffect(() => {
-    if (isInitialMount.current) {
-      fetchPosts(true);
-      isInitialMount.current = false;
-    } else {
-      fetchPosts();
-    }
-  }, [fetchPosts]);
+  }, [isLoading, hasCachedData]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,8 +66,8 @@ export default function Blog() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Progress Bar */}
-      {progress > 0 && (
+      {/* Progress Bar - Only show when loading fresh data */}
+      {progress > 0 && !hasCachedData && (
         <div className="fixed top-0 left-0 w-full h-1 bg-gray-200 z-50">
           <div 
             className="h-full bg-gray-900 transition-all duration-300 ease-out"
@@ -172,7 +115,7 @@ export default function Blog() {
 
       {/* Posts Section */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {loading ? (
+        {isLoading && !hasCachedData ? (
           <div className="space-y-12">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="animate-pulse">

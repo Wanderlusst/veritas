@@ -6,51 +6,17 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { formatDate } from '@/lib/utils';
 import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal';
-
-interface Post {
-  _id: string;
-  title: string;
-  content: string;
-  author: {
-    _id: string;
-    name: string;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
+import { useBlogPost } from '@/hooks/useBlogData';
 
 export default function BlogPost() {
-  const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
-
-  useEffect(() => {
-    if (params.id) {
-      fetchPost();
-    }
-  }, [params.id]);
-
-  const fetchPost = async () => {
-    try {
-      const response = await fetch(`/api/posts/${params.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setPost(data.post);
-      } else {
-        setError('Post not found');
-      }
-    } catch (error) {
-      console.error('Error fetching post:', error);
-      setError('Failed to load post');
-    } finally {
-      setLoading(false);
-    }
-  };
+  
+  // Use SWR hook for data fetching with caching
+  const { post, isLoading, error, hasCachedData } = useBlogPost(params.id as string);
 
   const openDeleteModal = () => {
     setDeleteModal(true);
@@ -73,7 +39,6 @@ export default function BlogPost() {
         alert('Failed to delete post');
       }
     } catch (error) {
-      console.error('Error deleting post:', error);
       alert('Failed to delete post');
     } finally {
       setDeleting(false);
@@ -81,7 +46,8 @@ export default function BlogPost() {
     }
   };
 
-  if (loading) {
+  // Show loading only when no cached data
+  if (isLoading && !hasCachedData) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
