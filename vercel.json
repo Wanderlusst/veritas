@@ -1,12 +1,11 @@
 {
   "version": 2,
   "name": "veritas",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30
     }
-  ],
+  },
   "routes": [
     {
       "src": "/api/(.*)",
@@ -19,11 +18,6 @@
   ],
   "env": {
     "NODE_ENV": "production"
-  },
-  "functions": {
-    "src/app/api/**/*.ts": {
-      "maxDuration": 30
-    }
   },
   "headers": [
     {
@@ -67,8 +61,5 @@
       "destination": "/api/auth/$1"
     }
   ],
-  "regions": ["iad1"],
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "installCommand": "npm ci --only=production"
+  "regions": ["iad1"]
 }
