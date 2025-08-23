@@ -40,20 +40,39 @@ function LoginForm() {
     setError('');
     setLoading(true);
 
+    // Basic validation
+    if (!formData.email.trim()) {
+      setError('Email is required');
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.password.trim()) {
+      setError('Password is required');
+      setLoading(false);
+      return;
+    }
+
     try {
       const result = await signIn('credentials', {
-        email: formData.email,
+        email: formData.email.trim(),
         password: formData.password,
         redirect: false,
       });
 
       if (result?.error) {
-        setError('Invalid email or password');
-      } else {
+        if (result.error === 'CredentialsSignin') {
+          setError('Invalid email or password. Please try again.');
+        } else if (result.error === 'EmailNotVerified') {
+          setError('Please verify your email address before signing in.');
+        } else {
+          setError('Login failed. Please check your credentials and try again.');
+        }
+      } else if (result?.ok) {
         router.push('/dashboard');
       }
     } catch (error: any) {
-      setError('Something went wrong');
+      setError('Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -77,13 +96,18 @@ function LoginForm() {
 
       {/* Login Form */}
       <div className="max-w-md mx-auto px-6 py-16">
-        {message && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-lg mb-8 text-center">
-            {message}
-          </div>
-        )}
-        
         <form className="space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg text-center">
+              {error}
+            </div>
+          )}
+          
+          {message && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-lg text-center">
+              {message}
+            </div>
+          )}
           <div>
             <label htmlFor="email" className="block text-lg font-medium text-gray-900 mb-3">
               Email Address
