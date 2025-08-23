@@ -16,6 +16,7 @@ interface Post {
     name: string;
   };
   createdAt: string;
+  updatedAt: string;
 }
 
 interface Pagination {
@@ -141,7 +142,23 @@ export default function Blog() {
                     <div className="flex flex-col sm:flex-row sm:items-center text-sm text-gray-500 space-y-1 sm:space-y-0">
                       <span className="font-medium text-gray-900">{post.author.name}</span>
                       <span className="hidden sm:inline mx-2">•</span>
-                      <span>Published {formatDate(post.createdAt)}</span>
+                      <span>
+                        {post.updatedAt !== post.createdAt 
+                          ? (
+                            <span className="flex items-center">
+                              <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                              Updated {formatDate(post.updatedAt)}
+                            </span>
+                          )
+                          : `Published ${formatDate(post.createdAt)}`
+                        }
+                      </span>
+                      {post.updatedAt !== post.createdAt && (
+                        <>
+                          <span className="hidden sm:inline mx-2">•</span>
+                          <span>Published {formatDate(post.createdAt)}</span>
+                        </>
+                      )}
                     </div>
                   </Link>
                 </article>

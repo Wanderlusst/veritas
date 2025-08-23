@@ -70,10 +70,10 @@ export async function GET(request: NextRequest) {
 
     const posts = await Post.find(query)
       .populate('author', 'name')
-      .sort({ createdAt: -1 })
+      .sort({ updatedAt: -1 })
       .skip(skip)
       .limit(limit)
-      .select('title excerpt author createdAt');
+      .select('title excerpt author createdAt updatedAt');
 
     const total = await Post.countDocuments(query);
 

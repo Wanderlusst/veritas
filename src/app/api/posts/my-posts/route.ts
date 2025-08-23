@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
 
     // Get posts with pagination
     const posts = await Post.find({ author: session.user.id })
-      .sort({ createdAt: -1 })
-      .select('title excerpt createdAt')
+      .sort({ updatedAt: -1 })
+      .select('title excerpt createdAt updatedAt')
       .skip(skip)
       .limit(limit);
 

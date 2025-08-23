@@ -174,7 +174,19 @@ export default function Dashboard() {
                       {stripHtmlTags(post.excerpt)}
                     </p>
                     <div className="text-sm text-gray-500">
-                      <span>Published {formatDate(post.createdAt)}</span>
+                      {post.updatedAt !== post.createdAt ? (
+                        <span className="flex items-center">
+                          <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                          Updated {formatDate(post.updatedAt)}
+                        </span>
+                      ) : (
+                        <span>Published {formatDate(post.createdAt)}</span>
+                      )}
+                      {post.updatedAt !== post.createdAt && (
+                        <span className="ml-2 sm:ml-4 text-gray-400">
+                          • Created {formatDate(post.createdAt)}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 lg:ml-8">
