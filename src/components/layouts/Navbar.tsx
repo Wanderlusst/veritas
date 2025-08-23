@@ -95,7 +95,7 @@ export default function Navbar() {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-gray-700 hover:text-blue-600 focus:outline-none focus:text-blue-600 transition-colors"
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {isMenuOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 ) : (
@@ -115,8 +115,8 @@ export default function Navbar() {
               onClick={toggleMenu}
             />
             
-            {/* Menu Panel - Full Width */}
-            <div className="absolute left-0 top-0 h-full w-full bg-white">
+            {/* Menu Panel - Smaller Width */}
+            <div className="absolute right-0 top-0 h-full w-80 bg-white">
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
                 <h2 className="text-2xl font-bold text-gray-900">Resources</h2>
