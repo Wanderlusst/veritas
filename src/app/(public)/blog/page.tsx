@@ -141,7 +141,7 @@ export default function Blog() {
                     <div className="flex flex-col sm:flex-row sm:items-center text-sm text-gray-500 space-y-1 sm:space-y-0">
                       <span className="font-medium text-gray-900">{post.author.name}</span>
                       <span className="hidden sm:inline mx-2">•</span>
-                      <span>{formatDate(post.createdAt)}</span>
+                      <span>Published {formatDate(post.createdAt)}</span>
                     </div>
                   </Link>
                 </article>

@@ -117,7 +117,7 @@ export default function Dashboard() {
           <div className="mb-6 sm:mb-8">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 sm:mb-4">Dashboard</h1>
             <p className="text-lg sm:text-xl text-gray-600 max-w-2xl">
-              Welcome back, <span className="font-semibold text-gray-900">{session.user?.name}</span>! 
+              Welcome back, {}
               Manage your resources and share your knowledge with the world.
             </p>
           </div>
@@ -174,10 +174,7 @@ export default function Dashboard() {
                       {stripHtmlTags(post.excerpt)}
                     </p>
                     <div className="text-sm text-gray-500">
-                      <span>Created {formatDate(post.createdAt)}</span>
-                      {post.updatedAt !== post.createdAt && (
-                        <span className="ml-2 sm:ml-4">• Updated {formatDate(post.updatedAt)}</span>
-                      )}
+                      <span>Published {formatDate(post.createdAt)}</span>
                     </div>
                   </div>
                   <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 lg:ml-8">
