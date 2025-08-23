@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
 import { usePosts } from '@/hooks/useBlogData';
+import ProgressBar from '@/components/ui/ProgressBar';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 interface Post {
   _id: string;
@@ -64,6 +66,9 @@ export default function Blog() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Progress Bar */}
+      <ProgressBar isLoading={isLoading} />
+      
       {/* Hero Section */}
       <div className="border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
@@ -104,17 +109,8 @@ export default function Blog() {
       {/* Posts Section */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {isLoading ? (
-          <div className="space-y-12">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="animate-pulse">
-                <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
-                <div className="h-5 bg-gray-200 rounded w-1/2 mb-6"></div>
-                <div className="h-4 bg-gray-200 rounded w-full mb-3"></div>
-                <div className="h-4 bg-gray-200 rounded w-2/3 mb-3"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              </div>
-            ))}
+          <div className="py-20">
+            <LoadingSpinner size="lg" text="Loading resources..." />
           </div>
         ) : posts.length === 0 ? (
           <div className="text-center py-20">

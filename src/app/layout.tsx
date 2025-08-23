@@ -3,12 +3,15 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layouts/Navbar';
 import { SessionProvider } from '@/components/providers/SessionProvider';
+import SWRProvider from '@/components/providers/SWRProvider';
+import LoadingProvider from '@/components/providers/LoadingProvider';
+import ProgressBar from '@/components/ui/ProgressBar';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Postify - Share Your Stories',
-  description: 'A modern platform for writers to share their stories, insights, and perspectives with the world.',
+  title: 'Resources - Platform for Knowledge',
+  description: 'A modern platform for contributors to share their knowledge, tools, and resources with the world.',
   icons: {
     icon: '/favicon.svg',
   },
@@ -38,10 +41,15 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <SessionProvider>
-          <Navbar />
-          <main className="min-h-screen bg-gray-50">
-            {children}
-          </main>
+          <SWRProvider>
+            <LoadingProvider>
+              <ProgressBar isLoading={false} />
+              <Navbar />
+              <main className="min-h-screen bg-gray-50">
+                {children}
+              </main>
+            </LoadingProvider>
+          </SWRProvider>
         </SessionProvider>
       </body>
     </html>

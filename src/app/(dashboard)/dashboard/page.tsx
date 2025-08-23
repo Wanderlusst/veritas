@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
 import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal';
 import { useMyPosts } from '@/hooks/useBlogData';
+import ProgressBar from '@/components/ui/ProgressBar';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 interface Post {
   _id: string;
@@ -106,6 +108,9 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Progress Bar */}
+      <ProgressBar isLoading={isLoading} />
+      
       {/* Header */}
       <div className="border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
@@ -132,16 +137,8 @@ export default function Dashboard() {
       {/* Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {isLoading ? (
-          <div className="space-y-8">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse">
-                <div className="h-6 sm:h-8 bg-gray-200 rounded w-3/4 mb-3 sm:mb-4"></div>
-                <div className="h-4 sm:h-5 bg-gray-200 rounded w-1/2 mb-4 sm:mb-6"></div>
-                <div className="h-4 bg-gray-200 rounded w-full mb-2 sm:mb-3"></div>
-                <div className="h-4 bg-gray-200 rounded w-2/3 mb-2 sm:mb-3"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              </div>
-            ))}
+          <div className="py-20">
+            <LoadingSpinner size="lg" text="Loading your resources..." />
           </div>
         ) : posts.length === 0 ? (
           <div className="text-center py-16 sm:py-20">
