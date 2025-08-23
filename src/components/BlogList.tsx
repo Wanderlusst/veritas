@@ -132,7 +132,7 @@ export default function BlogList({ initialPosts, hasMore: initialHasMore }: Blog
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search stories..."
+                              placeholder="Search resources..."
               className="w-full px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg border border-gray-200 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500 bg-white"
             />
             <button
@@ -171,10 +171,10 @@ export default function BlogList({ initialPosts, hasMore: initialHasMore }: Blog
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No stories found</h3>
-          <p className="text-gray-600 max-w-md mx-auto">
-            {debouncedSearchTerm ? 'Try adjusting your search terms or browse all stories.' : 'Be the first to share your story with the world!'}
-          </p>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">No resources found</h3>
+            <p className="text-gray-600 max-w-md mx-auto">
+              {debouncedSearchTerm ? 'Try adjusting your search terms or browse all resources.' : 'Be the first to share your resource with the world!'}
+            </p>
         </div>
       ) : (
         <>
