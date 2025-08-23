@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
 
@@ -30,6 +30,10 @@ export default function Blog() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [progress, setProgress] = useState(0);
+  
+  // Use refs to prevent unnecessary re-renders
+  const isInitialMount = useRef(true);
+  const lastFetchParams = useRef<string>('');
 
   // Debounce search term to avoid excessive API calls
   useEffect(() => {
@@ -41,12 +45,24 @@ export default function Blog() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Fetch posts when debounced search term or page changes
-  useEffect(() => {
-    fetchPosts();
-  }, [debouncedSearchTerm, currentPage]);
+  // Memoized fetch function to prevent recreation
+  const fetchPosts = useCallback(async (force = false) => {
+    const params = new URLSearchParams({
+      page: currentPage.toString(),
+      limit: '10'
+    });
+    
+    if (debouncedSearchTerm) {
+      params.append('search', debouncedSearchTerm);
+    }
 
-  const fetchPosts = useCallback(async () => {
+    const paramsString = params.toString();
+    
+    // Skip fetch if same params and not forced, and not initial mount
+    if (!force && !isInitialMount.current && lastFetchParams.current === paramsString) {
+      return;
+    }
+
     try {
       setLoading(true);
       setProgress(0);
@@ -56,21 +72,13 @@ export default function Blog() {
         setProgress(prev => Math.min(prev + 10, 90));
       }, 100);
 
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: '10'
-      });
-      
-      if (debouncedSearchTerm) {
-        params.append('search', debouncedSearchTerm);
-      }
-
-      const response = await fetch(`/api/posts?${params}`);
+      const response = await fetch(`/api/posts?${paramsString}`);
       if (response.ok) {
         const data = await response.json();
         setPosts(data.posts);
         setPagination(data.pagination);
         setProgress(100);
+        lastFetchParams.current = paramsString;
       }
       
       clearInterval(progressInterval);
@@ -81,6 +89,16 @@ export default function Blog() {
       setTimeout(() => setProgress(0), 500); // Hide progress bar after completion
     }
   }, [debouncedSearchTerm, currentPage]);
+
+  // Only fetch on mount and when dependencies actually change
+  useEffect(() => {
+    if (isInitialMount.current) {
+      fetchPosts(true);
+      isInitialMount.current = false;
+    } else {
+      fetchPosts();
+    }
+  }, [fetchPosts]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

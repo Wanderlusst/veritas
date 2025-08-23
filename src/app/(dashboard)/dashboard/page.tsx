@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
 import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal';
@@ -35,19 +35,20 @@ export default function Dashboard() {
   const [deleting, setDeleting] = useState(false);
 
   const POSTS_PER_PAGE = 10;
+  
+  // Use refs to prevent unnecessary re-renders
+  const isInitialMount = useRef(true);
+  const lastFetchParams = useRef<string>('');
 
-  useEffect(() => {
-    if (status === 'loading') return;
+  // Memoized fetch function to prevent recreation
+  const fetchPosts = useCallback(async (page = 1, append = false, force = false) => {
+    const paramsString = `page=${page}&limit=${POSTS_PER_PAGE}`;
     
-    if (!session) {
-      router.push('/login');
+    // Skip fetch if same params and not forced, and not initial mount
+    if (!force && !isInitialMount.current && lastFetchParams.current === paramsString) {
       return;
     }
 
-    fetchPosts();
-  }, [session, status, router]);
-
-  const fetchPosts = async (page = 1, append = false) => {
     try {
       if (page === 1) {
         setLoading(true);
@@ -55,7 +56,7 @@ export default function Dashboard() {
         setLoadingMore(true);
       }
 
-      const response = await fetch(`/api/posts/my-posts?page=${page}&limit=${POSTS_PER_PAGE}`);
+      const response = await fetch(`/api/posts/my-posts?${paramsString}`);
       if (response.ok) {
         const data = await response.json();
         
@@ -67,14 +68,30 @@ export default function Dashboard() {
         
         setHasMore(data.posts.length === POSTS_PER_PAGE);
         setCurrentPage(page);
+        lastFetchParams.current = paramsString;
       }
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      // Silent error handling for production
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, []);
+
+  // Only fetch on mount and when session changes
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session) {
+      router.push('/login');
+      return;
+    }
+
+    if (isInitialMount.current) {
+      fetchPosts(1, false, true);
+      isInitialMount.current = false;
+    }
+  }, [session, status, router, fetchPosts]);
 
   const loadMore = () => {
     if (!loadingMore && hasMore) {
@@ -114,7 +131,6 @@ export default function Dashboard() {
         alert('Failed to delete post');
       }
     } catch (error) {
-      console.error('Error deleting post:', error);
       alert('Failed to delete post');
     } finally {
       setDeleting(false);
