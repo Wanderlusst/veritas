@@ -59,8 +59,13 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Error updating profile:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: `Internal server error: ${error.message}` },
       { status: 500 }
     );
   }

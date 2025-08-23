@@ -64,6 +64,8 @@ export default function Profile() {
     }
 
     try {
+      console.log('Sending profile update request:', { name: formData.name, email: formData.email });
+      
       const response = await fetch('/api/users/profile', {
         method: 'PUT',
         headers: {
@@ -74,6 +76,8 @@ export default function Profile() {
           email: formData.email
         }),
       });
+      
+      console.log('Profile update response status:', response.status);
 
       const data = await response.json();
       console.log('Profile update response:', data);
@@ -82,8 +86,8 @@ export default function Profile() {
         throw new Error(data.message || 'Something went wrong');
       }
 
-      // Update session with new name
-      await update({ name: formData.name });
+      // Force session refresh to get updated data
+      await update();
       
       setSuccess('Profile updated successfully!');
       setFormData(prev => ({
