@@ -47,6 +47,12 @@ export default function Profile() {
   // Additional effect to sync form data when session updates
   useEffect(() => {
     if (session?.user) {
+      console.log('Session sync effect triggered:', {
+        sessionName: session.user.name,
+        sessionEmail: session.user.email,
+        currentFormName: formData.name,
+        currentFormEmail: formData.email
+      });
       setFormData(prev => ({
         ...prev,
         name: session.user.name || '',
@@ -56,9 +62,11 @@ export default function Profile() {
   }, [session?.user?.name, session?.user?.email]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    console.log('Form field change:', { field: e.target.name, newValue, oldValue: formData[e.target.name as keyof ProfileForm] });
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: newValue
     });
   };
 
@@ -92,23 +100,34 @@ export default function Profile() {
 
       const data = await response.json();
       console.log('Profile update response:', data);
+      console.log('Response data structure:', {
+        hasUser: !!data.user,
+        userKeys: data.user ? Object.keys(data.user) : 'no user object',
+        userName: data.user?.name,
+        userEmail: data.user?.email
+      });
 
       if (!response.ok) {
         throw new Error(data.message || 'Something went wrong');
       }
 
       // Force session refresh to get updated data
+      console.log('Before session update - formData:', formData);
       await update();
+      console.log('After session update - session:', session);
       
       // Update form data with the new values from the response
-      setFormData(prev => ({
-        ...prev,
+      const newFormData = {
+        ...formData,
         name: data.user.name,
         email: data.user.email,
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
-      }));
+      };
+      console.log('Setting new form data:', newFormData);
+      
+      setFormData(newFormData);
       
       setSuccess('Profile updated successfully!');
       setShowPasswordForm(false);
