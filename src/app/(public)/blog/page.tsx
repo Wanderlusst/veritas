@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
 
@@ -27,22 +27,42 @@ export default function Blog() {
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [progress, setProgress] = useState(0);
 
+  // Debounce search term to avoid excessive API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setCurrentPage(1); // Reset to first page when searching
+    }, 500); // Wait 500ms after user stops typing
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Fetch posts when debounced search term or page changes
   useEffect(() => {
     fetchPosts();
-  }, [currentPage, searchTerm]);
+  }, [debouncedSearchTerm, currentPage]);
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
+      setProgress(0);
+      
+      // Simulate progress for better UX
+      const progressInterval = setInterval(() => {
+        setProgress(prev => Math.min(prev + 10, 90));
+      }, 100);
+
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: '10'
       });
       
-      if (searchTerm) {
-        params.append('search', searchTerm);
+      if (debouncedSearchTerm) {
+        params.append('search', debouncedSearchTerm);
       }
 
       const response = await fetch(`/api/posts?${params}`);
@@ -50,17 +70,21 @@ export default function Blog() {
         const data = await response.json();
         setPosts(data.posts);
         setPagination(data.pagination);
+        setProgress(100);
       }
+      
+      clearInterval(progressInterval);
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      // Silent error handling for production
     } finally {
       setLoading(false);
+      setTimeout(() => setProgress(0), 500); // Hide progress bar after completion
     }
-  };
+  }, [debouncedSearchTerm, currentPage]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentPage(1);
+    // Search is already handled by debouncing
   };
 
   const handlePageChange = (page: number) => {
@@ -81,6 +105,16 @@ export default function Blog() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Progress Bar */}
+      {progress > 0 && (
+        <div className="fixed top-0 left-0 w-full h-1 bg-gray-200 z-50">
+          <div 
+            className="h-full bg-gray-900 transition-all duration-300 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
+
       {/* Hero Section */}
       <div className="border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
@@ -109,6 +143,11 @@ export default function Blog() {
                 Search
               </button>
             </div>
+            {searchTerm && (
+              <p className="text-sm text-gray-500 mt-2">
+                Searching for &ldquo;{searchTerm}&rdquo;...
+              </p>
+            )}
           </form>
         </div>
       </div>
@@ -137,7 +176,7 @@ export default function Blog() {
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No stories found</h3>
             <p className="text-gray-600 max-w-md mx-auto">
-              {searchTerm ? 'Try adjusting your search terms or browse all stories.' : 'Be the first to share your story with the world!'}
+              {debouncedSearchTerm ? 'Try adjusting your search terms or browse all stories.' : 'Be the first to share your story with the world!'}
             </p>
           </div>
         ) : (
