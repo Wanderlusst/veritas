@@ -27,6 +27,7 @@ export default function Profile() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [isProfileUpdated, setIsProfileUpdated] = useState(false);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -36,34 +37,18 @@ export default function Profile() {
       return;
     }
 
-    // Pre-fill form with current user data
-    setFormData(prev => ({
-      ...prev,
-      name: session.user?.name || '',
-      email: session.user?.email || ''
-    }));
-  }, [session, status, router]);
-
-  // Additional effect to sync form data when session updates
-  useEffect(() => {
-    if (session?.user) {
-      console.log('Session sync effect triggered:', {
-        sessionName: session.user.name,
-        sessionEmail: session.user.email,
-        currentFormName: formData.name,
-        currentFormEmail: formData.email
-      });
+    // Only pre-fill form if profile hasn't been updated in this session
+    if (!isProfileUpdated) {
       setFormData(prev => ({
         ...prev,
-        name: session.user.name || '',
-        email: session.user.email || ''
+        name: session.user?.name || '',
+        email: session.user?.email || ''
       }));
     }
-  }, [session?.user?.name, session?.user?.email]);
+  }, [session, status, router, isProfileUpdated]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    console.log('Form field change:', { field: e.target.name, newValue, oldValue: formData[e.target.name as keyof ProfileForm] });
     setFormData({
       ...formData,
       [e.target.name]: newValue
@@ -83,8 +68,6 @@ export default function Profile() {
     }
 
     try {
-      console.log('Sending profile update request:', { name: formData.name, email: formData.email });
-      
       const response = await fetch('/api/users/profile', {
         method: 'PUT',
         headers: {
@@ -96,26 +79,12 @@ export default function Profile() {
         }),
       });
       
-      console.log('Profile update response status:', response.status);
-
       const data = await response.json();
-      console.log('Profile update response:', data);
-      console.log('Response data structure:', {
-        hasUser: !!data.user,
-        userKeys: data.user ? Object.keys(data.user) : 'no user object',
-        userName: data.user?.name,
-        userEmail: data.user?.email
-      });
 
       if (!response.ok) {
         throw new Error(data.message || 'Something went wrong');
       }
 
-      // Force session refresh to get updated data
-      console.log('Before session update - formData:', formData);
-      await update();
-      console.log('After session update - session:', session);
-      
       // Update form data with the new values from the response
       const newFormData = {
         ...formData,
@@ -125,12 +94,22 @@ export default function Profile() {
         newPassword: '',
         confirmPassword: ''
       };
-      console.log('Setting new form data:', newFormData);
       
       setFormData(newFormData);
+      setIsProfileUpdated(true); // Mark profile as updated to prevent useEffect from overwriting
       
       setSuccess('Profile updated successfully!');
       setShowPasswordForm(false);
+
+      // Try to update session with new data
+      try {
+        await update({
+          name: data.user.name,
+          email: data.user.email
+        });
+      } catch (sessionError) {
+        // Session update failed, but form is already updated
+      }
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -175,7 +154,6 @@ export default function Profile() {
       });
 
       const data = await response.json();
-      console.log('Password update response:', data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Something went wrong');
