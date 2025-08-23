@@ -44,6 +44,17 @@ export default function Profile() {
     }));
   }, [session, status, router]);
 
+  // Additional effect to sync form data when session updates
+  useEffect(() => {
+    if (session?.user) {
+      setFormData(prev => ({
+        ...prev,
+        name: session.user.name || '',
+        email: session.user.email || ''
+      }));
+    }
+  }, [session?.user?.name, session?.user?.email]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -89,13 +100,17 @@ export default function Profile() {
       // Force session refresh to get updated data
       await update();
       
-      setSuccess('Profile updated successfully!');
+      // Update form data with the new values from the response
       setFormData(prev => ({
         ...prev,
+        name: data.user.name,
+        email: data.user.email,
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
       }));
+      
+      setSuccess('Profile updated successfully!');
       setShowPasswordForm(false);
     } catch (error: any) {
       setError(error.message);
