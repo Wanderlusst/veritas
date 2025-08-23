@@ -94,7 +94,7 @@ export default function BlogPostContent({ post }: BlogPostContentProps) {
                 </Link>
                 <button
                   onClick={openDeleteModal}
-                  className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100 transition-colors duration-200"
+                  className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100 hover:cursor-pointer transition-colors duration-200"
                 >
                   Delete
                 </button>
