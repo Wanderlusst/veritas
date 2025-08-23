@@ -6,6 +6,28 @@ import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import { useState, useRef, useEffect, useCallback } from 'react';
 
+// Custom Image extension with better controls
+const CustomImage = Image.extend({
+  addOptions() {
+    return {
+      ...this.parent?.(),
+      HTMLAttributes: {
+        class: 'max-w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-shadow duration-200',
+        style: 'max-width: 100%; height: auto; display: block; margin: 1rem auto;',
+      },
+    };
+  },
+  
+  addCommands() {
+    return {
+      ...this.parent?.(),
+      removeImage: () => ({ commands }: { commands: any }) => {
+        return commands.deleteSelection();
+      },
+    };
+  },
+});
+
 interface RichTextEditorProps {
   content: string;
   onChange: (content: string) => void;
@@ -38,7 +60,11 @@ const MenuBar = ({ editor }: { editor: any }) => {
       reader.onload = (e) => {
         const base64 = e.target?.result as string;
         if (editor && base64) {
-          editor.chain().focus().setImage({ src: base64, alt: file.name }).run();
+          editor.chain().focus().setImage({ 
+            src: base64, 
+            alt: file.name,
+            title: file.name 
+          }).run();
         }
       };
       reader.onerror = () => {
@@ -48,6 +74,21 @@ const MenuBar = ({ editor }: { editor: any }) => {
     } catch (error) {
       console.error('Image upload failed:', error);
       alert('Failed to upload image. Please try again.');
+    }
+  }, [editor]);
+
+  const removeImage = useCallback(() => {
+    if (editor) {
+      // If an image is selected, remove it
+      if (editor.isActive('image')) {
+        editor.chain().focus().deleteSelection().run();
+      } else {
+        // If cursor is on an image, remove the image node
+        const { $from } = editor.state.selection;
+        if ($from.parent.type.name === 'image') {
+          editor.chain().focus().deleteSelection().run();
+        }
+      }
     }
   }, [editor]);
 
@@ -241,11 +282,24 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <button
           type="button"
           onClick={addImage}
-          className="px-3 py-2 rounded text-sm font-medium bg-white text-gray-700 hover:bg-gray-100 transition-colors"
+          className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
+            editor.isActive('image') ? 'bg-blue-100 text-blue-800' : 'bg-white text-gray-700 hover:bg-gray-100'
+          }`}
           title="Add Image"
         >
           🖼️ Image
         </button>
+
+        {editor.isActive('image') && (
+          <button
+            type="button"
+            onClick={removeImage}
+            className="px-3 py-2 rounded text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+            title="Remove Image (or press Delete/Backspace)"
+          >
+            ❌ Remove
+          </button>
+        )}
 
         <input
           ref={fileInputRef}
@@ -357,10 +411,13 @@ function RichTextEditorContent({ content, onChange, placeholder }: RichTextEdito
           keepAttributes: false,
         },
       }),
-      Image.configure({
+      CustomImage.configure({
         HTMLAttributes: {
-          class: 'max-w-full h-auto rounded-lg shadow-md',
+          class: 'max-w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-shadow duration-200',
+          style: 'max-width: 100%; height: auto; display: block; margin: 1rem auto;',
         },
+        allowBase64: true,
+        inline: false,
       }),
       Link.configure({
         openOnClick: false,
@@ -393,6 +450,14 @@ function RichTextEditorContent({ content, onChange, placeholder }: RichTextEdito
           event.preventDefault();
           editor.commands.focus();
         }
+        
+        // Delete key to remove selected images
+        if (event.key === 'Delete' || event.key === 'Backspace') {
+          if (editor.isActive('image')) {
+            event.preventDefault();
+            editor.chain().focus().deleteSelection().run();
+          }
+        }
       };
 
       document.addEventListener('keydown', handleKeyDown);
@@ -422,8 +487,38 @@ function RichTextEditorContent({ content, onChange, placeholder }: RichTextEdito
       <MenuBar editor={editor} />
       <EditorContent 
         editor={editor} 
-        className="min-h-[400px] p-6 bg-white text-gray-900 focus:outline-none"
+        className="min-h-[400px] p-6 bg-white text-gray-900 focus:outline-none prose prose-sm max-w-none"
+        style={{
+          // Ensure images are responsive on mobile
+          '--tw-prose-img-max-width': '100%',
+          '--tw-prose-img-height': 'auto',
+        } as React.CSSProperties}
       />
+      <style jsx global>{`
+        .ProseMirror img {
+          max-width: 100% !important;
+          height: auto !important;
+          display: block !important;
+          margin: 1rem auto !important;
+          border-radius: 0.5rem !important;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+          cursor: pointer !important;
+          transition: box-shadow 0.2s ease-in-out !important;
+        }
+        .ProseMirror img:hover {
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+        }
+        .ProseMirror img:focus {
+          outline: 2px solid #3b82f6 !important;
+          outline-offset: 2px !important;
+        }
+        @media (max-width: 768px) {
+          .ProseMirror img {
+            margin: 0.5rem auto !important;
+            max-width: calc(100% - 2rem) !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
