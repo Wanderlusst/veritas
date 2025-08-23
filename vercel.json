@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "postify",
+  "name": "resources",
   "functions": {
     "src/app/api/**/*.ts": {
       "maxDuration": 30
