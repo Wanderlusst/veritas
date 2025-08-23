@@ -2,10 +2,11 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
 import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal';
+import { useMyPosts } from '@/hooks/useBlogData';
 
 interface Post {
   _id: string;
@@ -18,11 +19,6 @@ interface Post {
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
     postId: string | null;
@@ -34,51 +30,10 @@ export default function Dashboard() {
   });
   const [deleting, setDeleting] = useState(false);
 
-  const POSTS_PER_PAGE = 10;
-  
-  // Use refs to prevent unnecessary re-renders
-  const isInitialMount = useRef(true);
-  const lastFetchParams = useRef<string>('');
+  // Use SWR for data fetching
+  const { posts, isLoading, mutate } = useMyPosts();
 
-  // Memoized fetch function to prevent recreation
-  const fetchPosts = useCallback(async (page = 1, append = false, force = false) => {
-    const paramsString = `page=${page}&limit=${POSTS_PER_PAGE}`;
-    
-    // Skip fetch if same params and not forced, and not initial mount
-    if (!force && !isInitialMount.current && lastFetchParams.current === paramsString) {
-      return;
-    }
-
-    try {
-      if (page === 1) {
-        setLoading(true);
-      } else {
-        setLoadingMore(true);
-      }
-
-      const response = await fetch(`/api/posts/my-posts?${paramsString}`);
-      if (response.ok) {
-        const data = await response.json();
-        
-        if (append) {
-          setPosts(prev => [...prev, ...data.posts]);
-        } else {
-          setPosts(data.posts);
-        }
-        
-        setHasMore(data.posts.length === POSTS_PER_PAGE);
-        setCurrentPage(page);
-        lastFetchParams.current = paramsString;
-      }
-    } catch (error) {
-      // Silent error handling for production
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, []);
-
-  // Only fetch on mount and when session changes
+  // Only check session on mount and when session changes
   useEffect(() => {
     if (status === 'loading') return;
     
@@ -86,18 +41,7 @@ export default function Dashboard() {
       router.push('/login');
       return;
     }
-
-    if (isInitialMount.current) {
-      fetchPosts(1, false, true);
-      isInitialMount.current = false;
-    }
-  }, [session, status, router, fetchPosts]);
-
-  const loadMore = () => {
-    if (!loadingMore && hasMore) {
-      fetchPosts(currentPage + 1, true);
-    }
-  };
+  }, [session, status, router]);
 
   const openDeleteModal = (postId: string, postTitle: string) => {
     setDeleteModal({
@@ -125,7 +69,8 @@ export default function Dashboard() {
       });
 
       if (response.ok) {
-        setPosts(posts.filter(post => post._id !== deleteModal.postId));
+        // Refresh the posts data using SWR
+        mutate();
         closeDeleteModal();
       } else {
         alert('Failed to delete post');
@@ -168,7 +113,7 @@ export default function Dashboard() {
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 sm:mb-4">Dashboard</h1>
             <p className="text-lg sm:text-xl text-gray-600 max-w-2xl">
               Welcome back, <span className="font-semibold text-gray-900">{session.user?.name}</span>! 
-              Manage your stories and share your ideas with the world.
+              Manage your resources and share your knowledge with the world.
             </p>
           </div>
 
@@ -179,14 +124,14 @@ export default function Dashboard() {
             <svg className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Create New Story
+            Create New Resource
           </Link>
         </div>
       </div>
 
       {/* Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {loading ? (
+        {isLoading ? (
           <div className="space-y-8">
             {[1, 2, 3].map((i) => (
               <div key={i} className="animate-pulse">
@@ -205,9 +150,9 @@ export default function Dashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3 sm:mb-4">No stories yet</h3>
+            <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3 sm:mb-4">No resources yet</h3>
             <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-md mx-auto">
-              Start your writing journey by creating your first story. Share your thoughts, ideas, and experiences with the world.
+              Start your sharing journey by creating your first resource. Share your knowledge, tools, and experiences with the world.
             </p>
             <Link
               href="/dashboard/new-post"
@@ -216,12 +161,12 @@ export default function Dashboard() {
               <svg className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Create Your First Story
+              Create Your First Resource
             </Link>
           </div>
         ) : (
           <div className="space-y-8 sm:space-y-12">
-            {posts.map((post) => (
+            {posts.map((post: Post) => (
               <article key={post._id} className="group">
                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
                   <div className="flex-1 mb-4 lg:mb-0">
@@ -256,31 +201,10 @@ export default function Dashboard() {
               </article>
             ))}
 
-            {/* Load More Button */}
-            {hasMore && (
-              <div className="text-center pt-8">
-                <button
-                  onClick={loadMore}
-                  disabled={loadingMore}
-                  className="px-8 py-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium"
-                >
-                  {loadingMore ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700 mr-2"></div>
-                      Loading...
-                    </div>
-                  ) : (
-                    'Load More Stories'
-                  )}
-                </button>
-              </div>
-            )}
-
-            {/* Pagination Info */}
+            {/* Posts Count Info */}
             {posts.length > 0 && (
               <div className="text-center text-sm text-gray-500 pt-4 border-t border-gray-100">
-                Showing {posts.length} {posts.length === 1 ? 'story' : 'stories'}
-                {hasMore && ` • Click "Load More" to see more`}
+                Showing {posts.length} {posts.length === 1 ? 'resource' : 'resources'}
               </div>
             )}
           </div>
@@ -292,7 +216,7 @@ export default function Dashboard() {
         isOpen={deleteModal.isOpen}
         onClose={closeDeleteModal}
         onConfirm={deletePost}
-        title="Delete Story"
+        title="Delete Resource"
         message={`Are you sure you want to delete "${deleteModal.postTitle}"? This action cannot be undone.`}
         loading={deleting}
       />
