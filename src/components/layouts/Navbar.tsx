@@ -22,7 +22,7 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="text-2xl font-bold text-gray-900 hover:text-gray-700 transition-all duration-300">
-              Veritas
+              Postify
             </Link>
           </div>
 
@@ -47,7 +47,7 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={handleSignOut}
-                  className="px-6 py-2 text-white bg-gray-900 rounded-full hover:bg-gray-800 transition-colors duration-200 font-medium"
+                  className="px-6 py-2 text-white bg-gray-900 rounded-full hover:bg-gray-800 transition-colors duration-200 font-medium cursor-pointer"
                 >
                   Sign Out
                 </button>
@@ -89,7 +89,7 @@ export default function Navbar() {
             <div className="absolute left-0 top-0 h-full w-full bg-white">
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
-                <h2 className="text-2xl font-bold text-gray-900">Veritas</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Postify</h2>
                 <button
                   onClick={toggleMenu}
                   className="p-2 rounded-full bg-white hover:bg-gray-100 transition-colors duration-200 border border-gray-200"
@@ -155,7 +155,7 @@ export default function Navbar() {
                             handleSignOut();
                             toggleMenu();
                           }}
-                          className="flex items-center w-full px-4 py-4 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200 font-medium text-lg"
+                          className="flex items-center w-full px-4 py-4 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200 font-medium text-lg cursor-pointer"
                         >
                           <svg className="w-6 h-6 mr-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

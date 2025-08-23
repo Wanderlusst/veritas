@@ -7,13 +7,12 @@ export default function Home() {
       <div className="border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-6 py-20">
           <div className="text-center">
-            <h1 className="text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              Veritas
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 sm:mb-8 leading-tight">
+              Welcome to <span className="text-gray-700">Postify</span>
             </h1>
-            
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed max-w-2xl mx-auto">
-              A platform for authentic stories and genuine knowledge. 
-              Write what matters, read what inspires.
+            <p className="text-lg sm:text-xl lg:text-2xl text-gray-600 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed">
+              Share your stories, insights, and perspectives with the world. 
+              Join our community of writers and discover amazing content.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -156,11 +155,11 @@ export default function Home() {
       {/* CTA Section */}
       <div className="py-16 bg-gray-900">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Ready to start writing?
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
+            Ready to share your story?
           </h2>
-          <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
-            Join writers who are already sharing their knowledge and stories on Veritas.
+          <p className="text-lg sm:text-xl text-gray-600 mb-8 sm:mb-10 max-w-2xl mx-auto">
+            Join thousands of writers on Postify and start building your audience today.
           </p>
           <Link
             href="/login"

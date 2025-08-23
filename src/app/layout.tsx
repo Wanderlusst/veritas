@@ -7,8 +7,8 @@ import { SessionProvider } from '@/components/providers/SessionProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Veritas - Platform for Truth',
-  description: 'A platform for sharing truth, knowledge, and authentic stories with elegant minimalist design.',
+  title: 'Postify - Share Your Stories',
+  description: 'A modern platform for writers to share their stories, insights, and perspectives with the world.',
   icons: {
     icon: '/favicon.svg',
   },
