@@ -1,226 +1,110 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { Suspense } from 'react';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
-import { formatDate } from '@/lib/utils';
-import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal';
+import connectDB from '@/lib/db';
+import Post from '@/models/Post';
+import BlogPostContent from '@/components/BlogPostContent';
 
-interface Post {
-  _id: string;
-  title: string;
-  content: string;
-  author: {
-    _id: string;
-    name: string;
-  };
-  createdAt: string;
-  updatedAt: string;
+// Enable static generation with revalidation
+export const revalidate = 300; // Revalidate every 5 minutes
+
+// Generate static params for existing posts
+export async function generateStaticParams() {
+  try {
+    await connectDB();
+    
+    // Get all post IDs for static generation (limit to 100 for performance)
+    const posts = await Post.find({}, '_id').limit(100);
+    
+    return posts.map((post) => ({
+      id: post._id.toString(),
+    }));
+  } catch (error) {
+    return [];
+  }
 }
 
-export default function BlogPost() {
-  const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [deleteModal, setDeleteModal] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const params = useParams();
-  const router = useRouter();
-  const { data: session } = useSession();
-
-  useEffect(() => {
-    if (params.id) {
-      fetchPost();
+// Generate metadata for SEO
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    await connectDB();
+    
+    const post = await Post.findById(id).populate('author', 'name');
+    
+    if (!post) {
+      return {
+        title: 'Story Not Found - Veritas',
+        description: 'The story you are looking for does not exist.',
+      };
     }
-  }, [params.id]);
-
-  const fetchPost = async () => {
-    try {
-      const response = await fetch(`/api/posts/${params.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setPost(data.post);
-      } else {
-        setError('Post not found');
-      }
-    } catch (error) {
-      console.error('Error fetching post:', error);
-      setError('Failed to load post');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const openDeleteModal = () => {
-    setDeleteModal(true);
-  };
-
-  const closeDeleteModal = () => {
-    setDeleteModal(false);
-  };
-
-  const deletePost = async () => {
-    setDeleting(true);
-    try {
-      const response = await fetch(`/api/posts/${params.id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        router.push('/blog');
-      } else {
-        alert('Failed to delete post');
-      }
-    } catch (error) {
-      console.error('Error deleting post:', error);
-      alert('Failed to delete post');
-    } finally {
-      setDeleting(false);
-      closeDeleteModal();
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading story...</p>
-        </div>
-      </div>
-    );
+    
+    return {
+      title: `${post.title} - Veritas`,
+      description: post.excerpt || post.content.substring(0, 160),
+      authors: [{ name: post.author.name }],
+      openGraph: {
+        title: post.title,
+        description: post.excerpt || post.content.substring(0, 160),
+        type: 'article',
+        authors: [post.author.name],
+      },
+    };
+  } catch (error) {
+    return {
+      title: 'Story - Veritas',
+      description: 'Read amazing stories from our community.',
+    };
   }
+}
 
-  if (error || !post) {
+export default async function BlogPostPage({ params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    await connectDB();
+    
+    const post = await Post.findById(id).populate('author', 'name');
+    
+    if (!post) {
+      notFound();
+    }
+    
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="max-w-md mx-auto text-center px-6">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Story Not Found</h1>
-          <p className="text-gray-600 mb-8">{error || 'The story you are looking for does not exist.'}</p>
-          <Link
-            href="/blog"
-            className="inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-colors duration-200"
-          >
-            Back to Stories
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  const canEdit = session && (
-    session.user.id === post.author._id || 
-    session.user.role === 'admin'
-  );
-
-  return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <div className="border-b border-gray-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
-          <Link
-            href="/blog"
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors duration-200"
-          >
-            <svg className="h-4 w-4 sm:h-5 sm:w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Stories
-          </Link>
-        </div>
-      </div>
-
-      {/* Article */}
-      <article className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {/* Header */}
-        <header className="mb-12 sm:mb-16">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 sm:mb-8 leading-tight">
-            {post.title}
-          </h1>
-          
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-gray-600">
-              <span className="font-medium text-gray-900">{post.author.name}</span>
-              <span className="hidden sm:inline">•</span>
-              <span>{formatDate(post.createdAt)}</span>
-              {post.updatedAt !== post.createdAt && (
-                <>
-                  <span className="hidden sm:inline">•</span>
-                  <span>Updated {formatDate(post.updatedAt)}</span>
-                </>
-              )}
-            </div>
-            
-            {canEdit && (
-              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-                <Link
-                  href={`/dashboard/edit-post/${post._id}`}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors duration-200 text-center"
-                >
-                  Edit
-                </Link>
-                <button
-                  onClick={openDeleteModal}
-                  className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100 transition-colors duration-200"
-                >
-                  Delete
-                </button>
-              </div>
-            )}
-          </div>
-        </header>
-
-        {/* Content */}
-        <div className="prose prose-lg max-w-none">
-          <div 
-            className="text-gray-800 leading-relaxed text-base sm:text-lg"
-            dangerouslySetInnerHTML={{ 
-              __html: post.content.replace(/<p><strong>/g, '<p class="mb-4"><strong class="text-gray-900">')
-                                   .replace(/<\/strong><\/p>/g, '</strong></p>')
-                                   .replace(/<p>/g, '<p class="mb-4">')
-                                   .replace(/<h[1-6]>/g, '<h2 class="text-2xl font-bold text-gray-900 mb-4 mt-8">')
-                                   .replace(/<\/h[1-6]>/g, '</h2>')
-                                   .replace(/<ul>/g, '<ul class="list-disc pl-6 mb-4">')
-                                   .replace(/<ol>/g, '<ol class="list-decimal pl-6 mb-4">')
-                                   .replace(/<li>/g, '<li class="mb-2">')
-                                   .replace(/<blockquote>/g, '<blockquote class="border-l-4 border-gray-200 pl-4 italic text-gray-700 mb-4">')
-                                   .replace(/<code>/g, '<code class="bg-gray-100 px-2 py-1 rounded text-sm font-mono">')
-                                   .replace(/<pre>/g, '<pre class="bg-gray-100 p-4 rounded-lg overflow-x-auto mb-4">')
-            }}
-          />
-        </div>
-
-        {/* Footer */}
-        <footer className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-gray-100">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-            <div className="text-gray-600 text-center sm:text-left">
-              <span>Written by <span className="font-medium text-gray-900">{post.author.name}</span></span>
-            </div>
+      <div className="min-h-screen bg-white">
+        {/* Navigation */}
+        <div className="border-b border-gray-100">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
             <Link
               href="/blog"
-              className="text-gray-600 hover:text-gray-900 transition-colors duration-200 text-center sm:text-right"
+              className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors duration-200"
             >
-              View all stories →
+              <svg className="h-4 w-4 sm:h-5 sm:w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Stories
             </Link>
           </div>
-        </footer>
-      </article>
+        </div>
 
-      {/* Delete Confirmation Modal */}
-      <DeleteConfirmModal
-        isOpen={deleteModal}
-        onClose={closeDeleteModal}
-        onConfirm={deletePost}
-        title="Delete Story"
-        message={`Are you sure you want to delete "${post.title}"? This action cannot be undone.`}
-        loading={deleting}
-      />
-    </div>
-  );
+        {/* Article */}
+        <Suspense fallback={
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+            <div className="animate-pulse">
+              <div className="h-12 bg-gray-200 rounded w-3/4 mb-6"></div>
+              <div className="h-6 bg-gray-200 rounded w-1/2 mb-8"></div>
+              <div className="space-y-4">
+                <div className="h-4 bg-gray-200 rounded w-full"></div>
+                <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              </div>
+            </div>
+          </div>
+        }>
+          <BlogPostContent post={post} />
+        </Suspense>
+      </div>
+    );
+  } catch (error) {
+    notFound();
+  }
 }
