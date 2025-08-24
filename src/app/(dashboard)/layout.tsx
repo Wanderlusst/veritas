@@ -39,11 +39,15 @@ export default function DashboardLayout({
 
   // Ensure user object has all required properties
   const user = {
-    id: session.user.id || '',
+    id: session.user.id || (session.user as any)._id || '',
     name: session.user.name || '',
     email: session.user.email || '',
     role: session.user.role || 'user'
   };
+
+  // Debug logging
+  console.log('Layout session.user:', session.user);
+  console.log('Layout processed user:', user);
 
   return (
     <div className="min-h-screen bg-gray-50">

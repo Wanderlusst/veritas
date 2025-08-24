@@ -20,13 +20,19 @@ export default function DashboardSidebar({ user }: DashboardSidebarProps) {
 
   // Debug logging
   console.log('DashboardSidebar user:', user);
+  console.log('DashboardSidebar user.name:', user?.name);
+  console.log('DashboardSidebar user.email:', user?.email);
+  console.log('DashboardSidebar user.role:', user?.role);
 
   // Ensure user object has required properties
   if (!user || !user.name || !user.email || !user.role) {
     console.error('Invalid user object:', user);
     return (
       <div className="w-64 bg-white shadow-lg min-h-screen p-6">
-        <div className="text-red-600">Error: Invalid user data</div>
+        <div className="text-red-600">
+          <p>Error: Invalid user data</p>
+          <pre className="text-xs mt-2">{JSON.stringify(user, null, 2)}</pre>
+        </div>
       </div>
     );
   }
