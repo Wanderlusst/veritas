@@ -33,15 +33,23 @@ export default function DashboardLayout({
     );
   }
 
-  if (!session) {
+  if (!session || !session.user) {
     return null; // Will redirect
   }
+
+  // Ensure user object has all required properties
+  const user = {
+    id: session.user.id || '',
+    name: session.user.name || '',
+    email: session.user.email || '',
+    role: session.user.role || 'user'
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex">
         {/* Sidebar */}
-        <DashboardSidebar user={session.user} />
+        <DashboardSidebar user={user} />
         
         {/* Main Content */}
         <main className="flex-1 p-8">

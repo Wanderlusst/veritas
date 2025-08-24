@@ -18,6 +18,19 @@ interface DashboardSidebarProps {
 export default function DashboardSidebar({ user }: DashboardSidebarProps) {
   const pathname = usePathname();
 
+  // Debug logging
+  console.log('DashboardSidebar user:', user);
+
+  // Ensure user object has required properties
+  if (!user || !user.name || !user.email || !user.role) {
+    console.error('Invalid user object:', user);
+    return (
+      <div className="w-64 bg-white shadow-lg min-h-screen p-6">
+        <div className="text-red-600">Error: Invalid user data</div>
+      </div>
+    );
+  }
+
   const navigation = [
     {
       name: 'Dashboard',
