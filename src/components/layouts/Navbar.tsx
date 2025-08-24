@@ -34,7 +34,7 @@ export default function Navbar() {
               href="/" 
               className={`transition-colors duration-200 font-medium ${
                 pathname === '/' 
-                  ? 'text-gray-900 border-b-2 border-gray-900 pb-1' 
+                  ? 'text-gray-900' 
                   : 'text-gray-700 hover:text-gray-900'
               }`}
             >
@@ -44,7 +44,7 @@ export default function Navbar() {
               href="/blog" 
               className={`transition-colors duration-200 font-medium ${
                 pathname === '/blog' 
-                  ? 'text-gray-900 border-b-2 border-gray-900 pb-1' 
+                  ? 'text-gray-900' 
                   : 'text-gray-700 hover:text-gray-900'
               }`}
             >
@@ -59,7 +59,7 @@ export default function Navbar() {
                   href="/dashboard" 
                   className={`transition-colors duration-200 font-medium ${
                     pathname === '/dashboard' 
-                      ? 'text-gray-900 border-b-2 border-gray-900 pb-1' 
+                      ? 'text-gray-900' 
                       : 'text-gray-700 hover:text-gray-900'
                   }`}
                 >
@@ -69,7 +69,7 @@ export default function Navbar() {
                   href="/profile" 
                   className={`transition-colors duration-200 font-medium ${
                     pathname === '/profile' 
-                      ? 'text-gray-900 border-b-2 border-gray-900 pb-1' 
+                      ? 'text-gray-900' 
                       : 'text-gray-700 hover:text-gray-900'
                   }`}
                 >
