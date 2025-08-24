@@ -14,7 +14,7 @@ interface ProfileForm {
 }
 
 export default function Profile() {
-  const { data: session, status, update } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [formData, setFormData] = useState<ProfileForm>({
     name: '',
@@ -27,8 +27,8 @@ export default function Profile() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
-  const [isProfileUpdated, setIsProfileUpdated] = useState(false);
 
+  // Only populate form once on initial load - no dependencies on session changes
   useEffect(() => {
     if (status === 'loading') return;
     
@@ -37,22 +37,25 @@ export default function Profile() {
       return;
     }
 
-    // Only pre-fill form if profile hasn't been updated in this session
-    if (!isProfileUpdated) {
-      setFormData(prev => ({
-        ...prev,
-        name: session.user?.name || '',
-        email: session.user?.email || ''
-      }));
-    }
-  }, [session, status, router, isProfileUpdated]);
+    // Only set if form is completely empty (first load)
+    setFormData(prev => {
+      if (prev.name === '' && prev.email === '') {
+        return {
+          ...prev,
+          name: session.user?.name || '',
+          email: session.user?.email || ''
+        };
+      }
+      return prev; // Don't change if form already has data
+    });
+  }, [status, router]); // Removed session from dependencies
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [e.target.name]: newValue
-    });
+    }));
   };
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
@@ -61,6 +64,8 @@ export default function Profile() {
     setSuccess('');
     setLoading(true);
 
+    console.log('Form data before update:', formData);
+
     if (!formData.name.trim() || !formData.email.trim()) {
       setError('Name and email are required');
       setLoading(false);
@@ -68,15 +73,17 @@ export default function Profile() {
     }
 
     try {
+      const requestBody = {
+        name: formData.name.trim(),
+        email: formData.email.trim()
+      };
+
       const response = await fetch('/api/users/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email
-        }),
+        body: JSON.stringify(requestBody),
       });
       
       const data = await response.json();
@@ -85,32 +92,18 @@ export default function Profile() {
         throw new Error(data.message || 'Something went wrong');
       }
 
-      // Update form data with the new values from the response
-      const newFormData = {
-        ...formData,
-        name: data.user.name,
-        email: data.user.email,
+      // Force update form with exact values we sent
+      const updatedFormData = {
+        name: requestBody.name,
+        email: requestBody.email,
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
       };
       
-      setFormData(newFormData);
-      setIsProfileUpdated(true); // Mark profile as updated to prevent useEffect from overwriting
-      
+      setFormData(updatedFormData);
       setSuccess('Profile updated successfully!');
       
-      // Update the session with new user data
-      if (update && session) {
-        await update({
-          ...session,
-          user: {
-            ...session.user,
-            name: data.user.name,
-            email: data.user.email
-          }
-        });
-      }
     } catch (error: any) {
       setError(error.message || 'Failed to update profile');
     } finally {
@@ -250,13 +243,13 @@ export default function Profile() {
             </div>
             
             {error && (
-              <div className="text-gray-600 text-sm bg-gray-50 p-3 rounded-md">
+              <div className="text-red-600 text-sm bg-red-50 p-3 rounded-md border border-red-200">
                 {error}
               </div>
             )}
             
             {success && (
-              <div className="text-gray-600 text-sm bg-gray-50 p-3 rounded-md">
+              <div className="text-green-600 text-sm bg-green-50 p-3 rounded-md border border-green-200">
                 {success}
               </div>
             )}
