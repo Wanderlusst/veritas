@@ -7,7 +7,7 @@ import Post from '@/models/Post';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -20,24 +20,26 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
+    const { id } = await params;
+
     // Prevent admin from deleting themselves
-    if (params.id === session.user.id) {
+    if (id === session.user.id) {
       return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 });
     }
 
     await connectDB();
     
-    const user = await User.findById(params.id);
+    const user = await User.findById(id);
     
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // Delete all posts by this user
-    await Post.deleteMany({ author: params.id });
+    await Post.deleteMany({ author: id });
     
     // Delete the user
-    await User.findByIdAndDelete(params.id);
+    await User.findByIdAndDelete(id);
     
     return NextResponse.json({ 
       message: 'User and all associated posts deleted successfully'

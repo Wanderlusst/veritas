@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { formatDate } from '@/lib/utils';
+import { formatDate, stripHtmlTags } from '@/lib/utils';
 import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal';
 import { useMyPosts } from '@/hooks/useBlogData';
 import ProgressBar from '@/components/ui/ProgressBar';
@@ -84,12 +84,7 @@ export default function Dashboard() {
     }
   };
 
-  // Function to strip HTML tags and get clean text
-  const stripHtmlTags = (html: string) => {
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html;
-    return tmp.textContent || tmp.innerText || '';
-  };
+
 
   if (status === 'loading') {
     return (

@@ -19,7 +19,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/20 sticky top-0 z-50">
+    <nav className="bg-white/90 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -29,23 +29,23 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="hidden md:flex items-center space-x-8">
             <Link 
               href="/" 
-              className={`transition-colors duration-200 font-medium ${
+              className={`transition-all duration-200 font-medium hover:text-gray-900 ${
                 pathname === '/' 
                   ? 'text-gray-900' 
-                  : 'text-gray-700 hover:text-gray-900'
+                  : 'text-gray-600'
               }`}
             >
               Home
             </Link>
             <Link 
               href="/blog" 
-              className={`transition-colors duration-200 font-medium ${
+              className={`transition-all duration-200 font-medium hover:text-gray-900 ${
                 pathname === '/blog' 
                   ? 'text-gray-900' 
-                  : 'text-gray-700 hover:text-gray-900'
+                  : 'text-gray-600'
               }`}
             >
               Blog
@@ -57,20 +57,20 @@ export default function Navbar() {
               <>
                 <Link 
                   href="/dashboard" 
-                  className={`transition-colors duration-200 font-medium ${
+                  className={`transition-all duration-200 font-medium hover:text-gray-900 ${
                     pathname === '/dashboard' 
                       ? 'text-gray-900' 
-                      : 'text-gray-700 hover:text-gray-900'
+                      : 'text-gray-600'
                   }`}
                 >
                   Dashboard
                 </Link>
                 <Link 
                   href="/profile" 
-                  className={`transition-colors duration-200 font-medium ${
+                  className={`transition-all duration-200 font-medium hover:text-gray-900 ${
                     pathname === '/profile' 
                       ? 'text-gray-900' 
-                      : 'text-gray-700 hover:text-gray-900'
+                      : 'text-gray-600'
                   }`}
                 >
                   Profile
@@ -78,10 +78,10 @@ export default function Navbar() {
                 {session.user.role === 'admin' && (
                   <Link 
                     href="/admin" 
-                    className={`transition-colors duration-200 font-medium ${
+                    className={`transition-all duration-200 font-medium hover:text-gray-900 ${
                       pathname === '/admin' 
                         ? 'text-gray-900' 
-                        : 'text-gray-700 hover:text-gray-900'
+                        : 'text-gray-600'
                     }`}
                   >
                     Admin
@@ -89,13 +89,13 @@ export default function Navbar() {
                 )}
                 <button
                   onClick={handleSignOut}
-                  className="px-6 py-2 text-white bg-gray-900 rounded-full hover:bg-gray-800 transition-colors duration-200 font-medium cursor-pointer"
+                  className="px-6 py-2.5 text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-all duration-200 font-medium cursor-pointer shadow-sm hover:shadow-md"
                 >
                   Sign Out
                 </button>
               </>
             ) : (
-              <Link href="/login" className="px-6 py-2 text-white bg-gray-900 rounded-full hover:bg-gray-800 transition-colors duration-200 font-medium">
+              <Link href="/login" className="px-6 py-2.5 text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-all duration-200 font-medium shadow-sm hover:shadow-md">
                 Login
               </Link>
             )}
@@ -134,7 +134,7 @@ export default function Navbar() {
                 <h2 className="text-xl font-bold text-gray-900">Resources</h2>
                 <button
                   onClick={toggleMenu}
-                  className="p-2 rounded-full bg-white hover:bg-gray-100 transition-colors duration-200 border border-gray-200"
+                  className="p-2 rounded-lg bg-white hover:bg-gray-100 transition-all duration-200 border border-gray-200 shadow-sm hover:shadow-md"
                 >
                   <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -144,14 +144,14 @@ export default function Navbar() {
 
               {/* Navigation Links */}
               <nav className="p-4 bg-white">
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Link 
                     href="/" 
                     onClick={toggleMenu}
-                    className={`flex items-center px-3 py-3 rounded-lg transition-colors duration-200 font-medium text-base ${
+                    className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 font-medium text-base ${
                       pathname === '/' 
-                        ? 'text-gray-900 bg-gray-100' 
-                        : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'text-gray-900 bg-gray-100 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 hover:shadow-sm'
                     }`}
                   >
                     <svg className="w-5 h-5 mr-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -163,10 +163,10 @@ export default function Navbar() {
                   <Link 
                     href="/blog" 
                     onClick={toggleMenu}
-                    className={`flex items-center px-3 py-3 rounded-lg transition-colors duration-200 font-medium text-base ${
+                    className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 font-medium text-base ${
                       pathname === '/blog' 
-                        ? 'text-gray-900 bg-gray-100' 
-                        : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'text-gray-900 bg-gray-100 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 hover:shadow-sm'
                     }`}
                   >
                     <svg className="w-5 h-5 mr-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -180,10 +180,10 @@ export default function Navbar() {
                       <Link 
                         href="/dashboard" 
                         onClick={toggleMenu}
-                        className={`flex items-center px-3 py-3 rounded-lg transition-colors duration-200 font-medium text-base ${
+                        className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 font-medium text-base ${
                           pathname === '/dashboard' 
-                            ? 'text-gray-900 bg-gray-100' 
-                            : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                            ? 'text-gray-900 bg-gray-100 shadow-sm' 
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 hover:shadow-sm'
                         }`}
                       >
                         <svg className="w-5 h-5 mr-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -195,10 +195,10 @@ export default function Navbar() {
                       <Link 
                         href="/profile" 
                         onClick={toggleMenu}
-                        className={`flex items-center px-3 py-3 rounded-lg transition-colors duration-200 font-medium text-base ${
+                        className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 font-medium text-base ${
                           pathname === '/profile' 
-                            ? 'text-gray-900 bg-gray-100' 
-                            : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                            ? 'text-gray-900 bg-gray-100 shadow-sm' 
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 hover:shadow-sm'
                         }`}
                       >
                         <svg className="w-5 h-5 mr-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -211,10 +211,10 @@ export default function Navbar() {
                         <Link 
                           href="/admin" 
                           onClick={toggleMenu}
-                          className={`flex items-center px-3 py-3 rounded-lg transition-colors duration-200 font-medium text-base ${
+                          className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 font-medium text-base ${
                             pathname === '/admin' 
-                              ? 'text-gray-900 bg-gray-100' 
-                              : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                              ? 'text-gray-900 bg-gray-100 shadow-sm' 
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 hover:shadow-sm'
                           }`}
                         >
                           <svg className="w-5 h-5 mr-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -229,7 +229,7 @@ export default function Navbar() {
                             handleSignOut();
                             toggleMenu();
                           }}
-                          className="flex items-center w-full px-3 py-3 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200 font-medium text-base cursor-pointer"
+                          className="flex items-center w-full px-4 py-3 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 font-medium text-base cursor-pointer hover:shadow-sm"
                         >
                           <svg className="w-5 h-5 mr-3 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -243,10 +243,10 @@ export default function Navbar() {
                       <Link 
                         href="/login" 
                         onClick={toggleMenu}
-                        className={`flex items-center px-3 py-3 rounded-lg transition-colors duration-200 font-medium text-base ${
+                        className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 font-medium text-base ${
                           pathname === '/login' 
-                            ? 'text-gray-900 bg-gray-100' 
-                            : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                            ? 'text-gray-900 bg-gray-100 shadow-sm' 
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 hover:shadow-sm'
                         }`}
                       >
                         <svg className="w-5 h-5 mr-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

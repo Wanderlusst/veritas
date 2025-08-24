@@ -37,7 +37,19 @@ const postSchema = new mongoose.Schema<IPost>({
 // Create excerpt from content if not provided
 postSchema.pre('save', function(next) {
   if (!this.excerpt && this.content) {
-    this.excerpt = this.content.substring(0, 150) + '...';
+    // Strip HTML tags from content before creating excerpt
+    const cleanContent = this.content
+      .replace(/<[^>]*>/g, '') // Remove HTML tags
+      .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+      .replace(/&amp;/g, '&') // Replace &amp; with &
+      .replace(/&lt;/g, '<') // Replace &lt; with <
+      .replace(/&gt;/g, '>') // Replace &gt; with >
+      .replace(/&quot;/g, '"') // Replace &quot; with "
+      .replace(/&#39;/g, "'") // Replace &#39; with '
+      .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+      .trim(); // Remove leading/trailing whitespace
+    
+    this.excerpt = cleanContent.substring(0, 150) + (cleanContent.length > 150 ? '...' : '');
   }
   next();
 });

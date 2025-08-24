@@ -6,7 +6,7 @@ import User from '@/models/User';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -26,8 +26,9 @@ export async function PATCH(
     }
 
     await connectDB();
+    const { id } = await params;
     
-    const user = await User.findById(params.id);
+    const user = await User.findById(id);
     
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });

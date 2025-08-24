@@ -16,7 +16,10 @@ interface User {
 interface Post {
   _id: string;
   title: string;
-  author: string;
+  author: {
+    _id: string;
+    name: string;
+  };
   createdAt: string;
   status: 'published' | 'draft';
 }
@@ -27,6 +30,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [regeneratingExcerpts, setRegeneratingExcerpts] = useState(false);
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalPosts: 0,
@@ -118,6 +122,35 @@ export default function AdminDashboard() {
     }
   };
 
+  const regenerateExcerpts = async () => {
+    if (!confirm('Are you sure you want to regenerate excerpts for all posts? This will update existing excerpts to remove HTML tags.')) {
+      return;
+    }
+
+    setRegeneratingExcerpts(true);
+
+    try {
+      const res = await fetch('/api/posts/regenerate-excerpts', {
+        method: 'POST',
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        alert(`Successfully regenerated excerpts for ${data.updatedCount} posts!`);
+        // Refresh the data
+        fetchAdminData();
+      } else {
+        const errorData = await res.json();
+        alert(`Error: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error('Error regenerating excerpts:', error);
+      alert('Error regenerating excerpts. Please try again.');
+    } finally {
+      setRegeneratingExcerpts(false);
+    }
+  };
+
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -135,6 +168,36 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Navigation Header */}
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors duration-200"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Dashboard
+              </Link>
+              <span className="text-gray-400">|</span>
+              <span className="text-sm text-gray-500">Admin Panel</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">Welcome, {session.user.name}</span>
+              <Link
+                href="/profile"
+                className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200"
+              >
+                Profile
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -187,6 +250,31 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+        {/* System Tools */}
+        <div className="bg-white rounded-lg shadow mb-8">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900">System Tools</h2>
+            <p className="text-gray-600 mt-1">Maintenance and utility functions</p>
+          </div>
+          <div className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">Regenerate Post Excerpts</h3>
+                <p className="text-gray-600 mt-1">
+                  Clean up HTML tags from existing post excerpts. This will update all posts to have clean, readable excerpts.
+                </p>
+              </div>
+              <button
+                onClick={regenerateExcerpts}
+                disabled={regeneratingExcerpts}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {regeneratingExcerpts ? 'Regenerating...' : 'Regenerate Excerpts'}
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Users Management */}
         <div className="bg-white rounded-lg shadow mb-8">
           <div className="px-6 py-4 border-b border-gray-200">
@@ -227,14 +315,14 @@ export default function AdminDashboard() {
                       {user.role === 'user' ? (
                         <button
                           onClick={() => updateUserRole(user._id, 'admin')}
-                          className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-md transition-colors"
+                          className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-md transition-colors cursor-pointer"
                         >
                           Make Admin
                         </button>
                       ) : (
                         <button
                           onClick={() => updateUserRole(user._id, 'user')}
-                          className="text-yellow-600 hover:text-yellow-900 bg-yellow-50 hover:bg-yellow-100 px-3 py-1 rounded-md transition-colors"
+                          className="text-yellow-600 hover:text-yellow-900 bg-yellow-50 hover:bg-yellow-100 px-3 py-1 rounded-md transition-colors cursor-pointer"
                         >
                           Remove Admin
                         </button>
@@ -242,7 +330,7 @@ export default function AdminDashboard() {
                       {user._id !== session.user.id && (
                         <button
                           onClick={() => deleteUser(user._id)}
-                          className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md transition-colors"
+                          className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md transition-colors cursor-pointer"
                         >
                           Delete
                         </button>
@@ -277,7 +365,7 @@ export default function AdminDashboard() {
                       <div className="text-sm font-medium text-gray-900">{post.title}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {post.author}
+                      {post.author?.name || 'Unknown Author'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(post.createdAt).toLocaleDateString()}
@@ -285,7 +373,7 @@ export default function AdminDashboard() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <Link
                         href={`/blog/${post._id}`}
-                        className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-md transition-colors"
+                        className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-md transition-colors cursor-pointer"
                       >
                         View
                       </Link>

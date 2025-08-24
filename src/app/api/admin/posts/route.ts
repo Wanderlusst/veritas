@@ -16,13 +16,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
+    console.log('Admin posts API: Connecting to database...');
     await connectDB();
+    console.log('Admin posts API: Database connected, executing query...');
     
     const posts = await Post.find({})
       .populate('author', 'name')
       .select('title author createdAt')
       .sort({ createdAt: -1 })
       .limit(20);
+    
+    console.log('Admin posts API: Found posts:', posts.length);
     
     return NextResponse.json({ posts });
   } catch (error) {

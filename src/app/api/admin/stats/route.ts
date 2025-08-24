@@ -17,13 +17,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
+    console.log('Admin stats API: Connecting to database...');
     await connectDB();
+    console.log('Admin stats API: Database connected, executing queries...');
     
     const [totalUsers, totalPosts, totalAdmins] = await Promise.all([
       User.countDocuments(),
       Post.countDocuments(),
       User.countDocuments({ role: 'admin' })
     ]);
+    
+    console.log('Admin stats API: Query results:', { totalUsers, totalPosts, totalAdmins });
     
     return NextResponse.json({ 
       totalUsers,

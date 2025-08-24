@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { stripHtmlTags } from '@/lib/utils';
 
 interface Post {
   _id: string;
@@ -69,6 +70,8 @@ export default function UserPosts({ userId }: UserPostsProps) {
       day: 'numeric',
     });
   };
+
+
 
   if (loading) {
     return (
@@ -143,7 +146,7 @@ export default function UserPosts({ userId }: UserPostsProps) {
                     {post.title}
                   </Link>
                 </h3>
-                <p className="text-gray-600 mb-3 line-clamp-2">{post.excerpt}</p>
+                <p className="text-gray-600 mb-3 line-clamp-2">{stripHtmlTags(post.excerpt)}</p>
                 <div className="flex items-center text-sm text-gray-500 space-x-4">
                   <span>Created: {formatDate(post.createdAt)}</span>
                   {post.updatedAt !== post.createdAt && (

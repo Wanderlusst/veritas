@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { formatDate } from '@/lib/utils';
+import { formatDate, stripHtmlTags } from '@/lib/utils';
 
 interface Post {
   _id: string;
@@ -111,16 +111,7 @@ export default function BlogList({ initialPosts, hasMore: initialHasMore }: Blog
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Function to strip HTML tags and get clean text
-  const stripHtmlTags = (html: string) => {
-    if (typeof document !== 'undefined') {
-      const tmp = document.createElement('div');
-      tmp.innerHTML = html;
-      return tmp.textContent || tmp.innerText || '';
-    }
-    // Fallback for server-side rendering
-    return html.replace(/<[^>]*>/g, '');
-  };
+
 
   return (
     <>

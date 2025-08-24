@@ -16,9 +16,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
+    console.log('Admin users API: Connecting to database...');
     await connectDB();
+    console.log('Admin users API: Database connected, executing query...');
     
     const users = await User.find({}).select('-password').sort({ createdAt: -1 });
+    console.log('Admin users API: Found users:', users.length);
     
     return NextResponse.json({ users });
   } catch (error) {
