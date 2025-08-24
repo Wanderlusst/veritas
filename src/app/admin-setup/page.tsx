@@ -25,7 +25,7 @@ export default function AdminSetup() {
         setMessage(data.message);
         // Redirect to admin dashboard after 3 seconds
         setTimeout(() => {
-          router.push('/admin');
+          router.push('/dashboard/admin');
         }, 3000);
       } else {
         setError(data.error);
