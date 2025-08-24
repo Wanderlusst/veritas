@@ -107,102 +107,178 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Progress Bar */}
-      <ProgressBar isLoading={isLoading} />
-      
-      {/* Header */}
-      <div className="border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-          <div className="mb-6 sm:mb-8">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 sm:mb-4">Dashboard</h1>
-            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl">
-              Welcome back, {}
-              Manage your resources and share your knowledge with the world.
-            </p>
-          </div>
-
-          <Link
-            href="/dashboard/new-post"
-            className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gray-900 text-white rounded-full hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-all duration-200 text-base sm:text-lg font-medium"
-          >
-            <svg className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Create New Resource
-          </Link>
-        </div>
+    <div className="space-y-8">
+      {/* Welcome Section */}
+      <div className="bg-white rounded-lg shadow p-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+          Welcome back, {session.user.name}! 👋
+        </h1>
+        <p className="text-gray-600 text-lg">
+          Manage your posts, profile, and {session.user.role === 'admin' ? 'administer the platform' : 'grow your audience'}.
+        </p>
       </div>
 
-      {/* Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {isLoading ? (
-          <div className="py-20">
-            <LoadingSpinner size="lg" text="Loading your resources..." />
-          </div>
-        ) : posts.length === 0 ? (
-          <div className="text-center py-16 sm:py-20">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8">
-              <svg className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* My Posts Card */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center mb-4">
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3 sm:mb-4">No resources yet</h3>
-            <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-md mx-auto">
-              Start your sharing journey by creating your first resource. Share your knowledge, tools, and experiences with the world.
+            <h3 className="text-lg font-semibold text-gray-900 ml-3">My Posts</h3>
+          </div>
+          <p className="text-gray-600 mb-4">
+            Create, edit, and manage your blog posts. Track performance and engage with your audience.
+          </p>
+          <Link
+            href="/dashboard/user-posts"
+            className="inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200"
+          >
+            Manage Posts
+            <svg className="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
+
+        {/* Profile Card */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center mb-4">
+            <div className="p-3 bg-green-100 rounded-lg">
+              <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 ml-3">Profile</h3>
+          </div>
+          <p className="text-gray-600 mb-4">
+            Update your personal information, change your password, and manage your account settings.
+          </p>
+          <Link
+            href="/profile"
+            className="inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200"
+          >
+            Edit Profile
+            <svg className="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
+
+        {/* Admin Panel Card - Only for admins */}
+        {session.user.role === 'admin' && (
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
+            <div className="flex items-center mb-4">
+              <div className="p-3 bg-purple-100 rounded-lg">
+                <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 ml-3">Admin Panel</h3>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Manage all users, posts, and platform settings. Monitor system statistics and maintain platform quality.
             </p>
             <Link
-              href="/dashboard/new-post"
-              className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-all duration-200 text-base sm:text-lg font-medium"
+              href="/admin"
+              className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200"
             >
-              <svg className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              Access Admin Panel
+              <svg className="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
-              Create Your First Resource
             </Link>
           </div>
-        ) : (
-          <div className="space-y-8 sm:space-y-12">
-            {posts.map((post: Post) => (
-              <article key={post._id} className="group">
-                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
-                  <div className="flex-1 mb-4 lg:mb-0">
-                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 group-hover:text-gray-700 transition-colors duration-200">
-                      {post.title}
-                    </h3>
-                    <p className="text-base sm:text-lg text-gray-600 mb-4 sm:mb-6 leading-relaxed max-w-3xl">
-                      {stripHtmlTags(post.excerpt)}
-                    </p>
-                    <div className="text-sm text-gray-500">
-                      <span>Published at {formatDate(post.createdAt)}</span>
+        )}
+      </div>
+
+      {/* Recent Posts Section */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-900">Recent Posts</h2>
+            <Link
+              href="/dashboard/new-post"
+              className="inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New Post
+            </Link>
+          </div>
+        </div>
+        
+        <div className="p-6">
+          {isLoading ? (
+            <LoadingSpinner />
+          ) : posts && posts.length > 0 ? (
+            <div className="space-y-4">
+              {posts.slice(0, 5).map((post: Post) => (
+                <div key={post._id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors duration-200">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        <Link 
+                          href={`/blog/${post._id}`}
+                          className="hover:text-gray-700 transition-colors duration-200"
+                        >
+                          {post.title}
+                        </Link>
+                      </h3>
+                      <p className="text-gray-600 mb-3 line-clamp-2">
+                        {stripHtmlTags(post.excerpt)}
+                      </p>
+                      <div className="flex items-center text-sm text-gray-500 space-x-4">
+                        <span>Created: {formatDate(post.createdAt)}</span>
+                        {post.updatedAt !== post.createdAt && (
+                          <span>Updated: {formatDate(post.updatedAt)}</span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2 ml-4">
+                      <Link
+                        href={`/dashboard/edit-post/${post._id}`}
+                        className="px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors duration-200"
+                      >
+                        Edit
+                      </Link>
+                      <button
+                        onClick={() => openDeleteModal(post._id, post.title)}
+                        className="px-3 py-2 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors duration-200"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 lg:ml-8">
-                    <Link
-                      href={`/dashboard/edit-post/${post._id}`}
-                      className="px-4 sm:px-6 py-2 sm:py-3 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors duration-200 text-center"
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      onClick={() => openDeleteModal(post._id, post.title)}
-                      className="px-4 sm:px-6 py-2 sm:py-3 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100 hover:cursor-pointer transition-colors duration-200"
-                    >
-                      Delete
-                    </button>
-                  </div>
                 </div>
-              </article>
-            ))}
-
-            {/* Posts Count Info */}
-            {posts.length > 0 && (
-              <div className="text-center text-sm text-gray-500 pt-4 border-t border-gray-100">
-                Showing {posts.length} {posts.length === 1 ? 'resource' : 'resources'}
-              </div>
-            )}
-          </div>
-        )}
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No posts yet</h3>
+              <p className="text-gray-500 mb-6">
+                Start writing your first blog post to share your thoughts with the world.
+              </p>
+              <Link
+                href="/dashboard/new-post"
+                className="inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Create Your First Post
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Delete Confirmation Modal */}
@@ -210,7 +286,7 @@ export default function Dashboard() {
         isOpen={deleteModal.isOpen}
         onClose={closeDeleteModal}
         onConfirm={deletePost}
-        title="Delete Resource"
+        title="Delete Post"
         message={`Are you sure you want to delete "${deleteModal.postTitle}"? This action cannot be undone.`}
         loading={deleting}
       />
