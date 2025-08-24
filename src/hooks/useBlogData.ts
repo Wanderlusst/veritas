@@ -18,8 +18,10 @@ export function usePosts(page: number = 1, limit: number = 10, search?: string) 
     fetcher,
     {
       revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-      dedupingInterval: 10000, // 10 seconds
+      revalidateOnReconnect: false,
+      dedupingInterval: 60000, // 1 minute
+      keepPreviousData: true,
+      compare: (a, b) => JSON.stringify(a) === JSON.stringify(b),
     }
   );
 
@@ -39,8 +41,10 @@ export function usePost(id: string) {
     fetcher,
     {
       revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-      dedupingInterval: 30000, // 30 seconds for posts
+      revalidateOnReconnect: false,
+      dedupingInterval: 300000, // 5 minutes for posts
+      keepPreviousData: true,
+      compare: (a, b) => JSON.stringify(a) === JSON.stringify(b),
     }
   );
 
@@ -59,8 +63,10 @@ export function useMyPosts() {
     fetcher,
     {
       revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-      dedupingInterval: 15000, // 15 seconds
+      revalidateOnReconnect: false,
+      dedupingInterval: 120000, // 2 minutes
+      keepPreviousData: true,
+      compare: (a, b) => JSON.stringify(a) === JSON.stringify(b),
     }
   );
 
