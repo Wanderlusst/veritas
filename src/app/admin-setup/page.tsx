@@ -63,7 +63,7 @@ export default function AdminSetup() {
         <button
           onClick={setupAdmin}
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+          className="w-full bg-gray-900 text-white py-3 px-4 rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
         >
           {loading ? 'Setting up admin...' : 'Setup Admin'}
         </button>
