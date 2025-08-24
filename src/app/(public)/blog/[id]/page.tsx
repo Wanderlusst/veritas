@@ -9,6 +9,7 @@ import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal';
 import { usePost } from '@/hooks/useBlogData';
 import ProgressBar from '@/components/ui/ProgressBar';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import Comments from '@/components/Comments';
 
 interface Post {
   _id: string;
@@ -190,6 +191,9 @@ export default function BlogPost() {
           </div>
         </footer>
       </article>
+
+      {/* Comments Section */}
+      <Comments postId={post._id} />
 
       {/* Delete Confirmation Modal */}
       <DeleteConfirmModal

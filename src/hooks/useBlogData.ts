@@ -3,7 +3,7 @@ import useSWR from 'swr';
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 // Hook for fetching posts with pagination and search
-export function usePosts(page: number = 1, limit: number = 10, search?: string) {
+export function usePosts(page: number = 1, limit: number = 10, search?: string, author?: string) {
   const params = new URLSearchParams({
     page: page.toString(),
     limit: limit.toString()
@@ -11,6 +11,10 @@ export function usePosts(page: number = 1, limit: number = 10, search?: string) 
   
   if (search) {
     params.append('search', search);
+  }
+
+  if (author) {
+    params.append('author', author);
   }
 
   const { data, error, isLoading, mutate } = useSWR(
@@ -28,6 +32,28 @@ export function usePosts(page: number = 1, limit: number = 10, search?: string) 
   return {
     posts: data?.posts || [],
     pagination: data?.pagination || null,
+    isLoading,
+    error,
+    mutate
+  };
+}
+
+// Hook for fetching authors
+export function useAuthors() {
+  const { data, error, isLoading, mutate } = useSWR(
+    '/api/users',
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 300000, // 5 minutes
+      keepPreviousData: true,
+      compare: (a, b) => JSON.stringify(a) === JSON.stringify(b),
+    }
+  );
+
+  return {
+    authors: data?.users || [],
     isLoading,
     error,
     mutate

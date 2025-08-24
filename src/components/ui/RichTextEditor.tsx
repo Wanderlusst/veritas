@@ -134,7 +134,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
-            editor.isActive('bold') ? 'bg-blue-100 text-blue-800' : 'bg-white text-gray-700 hover:bg-gray-100'
+            editor.isActive('bold') ? 'bg-gray-100 text-gray-800' : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
           title="Bold"
         >
@@ -145,7 +145,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
-            editor.isActive('italic') ? 'bg-blue-100 text-blue-800' : 'bg-white text-gray-700 hover:bg-gray-100'
+            editor.isActive('italic') ? 'bg-gray-100 text-gray-800' : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
           title="Italic"
         >
@@ -156,7 +156,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
           type="button"
           onClick={() => editor.chain().focus().toggleUnderline().run()}
           className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
-            editor.isActive('underline') ? 'bg-blue-100 text-blue-800' : 'bg-white text-gray-700 hover:bg-gray-100'
+            editor.isActive('underline') ? 'bg-gray-100 text-gray-800' : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
           title="Underline"
         >
@@ -174,7 +174,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
               editor.chain().focus().toggleHeading({ level: parseInt(e.target.value) }).run();
             }
           }}
-          className="px-3 py-2 border border-gray-300 rounded text-sm bg-white text-gray-700"
+          className="px-3 py-2 border border-gray-300 rounded text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all duration-200"
           value={editor.isActive('heading', { level: 1 }) ? '1' : 
                  editor.isActive('heading', { level: 2 }) ? '2' : 
                  editor.isActive('heading', { level: 3 }) ? '3' : 
@@ -198,7 +198,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
           type="button"
           onClick={toggleBulletList}
           className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
-            editor.isActive('bulletList') ? 'bg-blue-100 text-blue-800' : 'bg-white text-gray-700 hover:bg-gray-100'
+            editor.isActive('bulletList') ? 'bg-gray-100 text-gray-800' : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
           title="Bullet List"
         >
@@ -209,7 +209,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
           type="button"
           onClick={toggleOrderedList}
           className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
-            editor.isActive('orderedList') ? 'bg-blue-100 text-blue-800' : 'bg-white text-gray-700 hover:bg-gray-100'
+            editor.isActive('orderedList') ? 'bg-gray-100 text-gray-800' : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
           title="Numbered List"
         >
@@ -223,7 +223,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
           type="button"
           onClick={() => setShowLinkInput(!showLinkInput)}
           className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
-            editor.isActive('link') ? 'bg-blue-100 text-blue-800' : 'bg-white text-gray-700 hover:bg-gray-100'
+            editor.isActive('link') ? 'bg-gray-100 text-gray-800' : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
           title="Link"
         >
@@ -259,7 +259,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
             <button
               type="button"
               onClick={addLink}
-              className="px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+              className="px-3 py-2 bg-gray-900 text-white rounded text-sm hover:bg-gray-800"
             >
               Add
             </button>
@@ -283,7 +283,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
           type="button"
           onClick={addImage}
           className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
-            editor.isActive('image') ? 'bg-blue-100 text-blue-800' : 'bg-white text-gray-700 hover:bg-gray-100'
+            editor.isActive('image') ? 'bg-gray-100 text-gray-800' : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
           title="Add Image"
         >
@@ -336,7 +336,7 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
           <button
             type="button"
             onClick={() => setUseFallback(false)}
-            className="text-blue-600 hover:text-blue-800 text-sm underline"
+            className="text-gray-600 hover:text-gray-800 text-sm underline"
           >
             Try rich text editor again
           </button>
@@ -378,7 +378,7 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
           <button
             type="button"
             onClick={() => setUseFallback(true)}
-            className="text-blue-600 hover:text-blue-800 text-sm underline"
+            className="text-gray-600 hover:text-gray-800 text-sm underline"
           >
             Use simple text editor
           </button>
@@ -422,7 +422,7 @@ function RichTextEditorContent({ content, onChange, placeholder }: RichTextEdito
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-blue-600 hover:text-blue-800 underline',
+          class: 'text-gray-600 hover:text-gray-800 underline',
         },
         validate: (href) => /^https?:\/\//.test(href),
       }),

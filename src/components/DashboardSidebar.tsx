@@ -29,7 +29,7 @@ export default function DashboardSidebar({ user }: DashboardSidebarProps) {
     console.error('Invalid user object:', user);
     return (
       <div className="w-64 bg-white shadow-lg min-h-screen p-6">
-        <div className="text-red-600">
+        <div className="text-gray-600">
           <p>Error: Invalid user data</p>
           <pre className="text-xs mt-2">{JSON.stringify(user, null, 2)}</pre>
         </div>
@@ -59,7 +59,7 @@ export default function DashboardSidebar({ user }: DashboardSidebarProps) {
     },
     {
       name: 'Profile',
-      href: '/profile',
+      href: '/dashboard/profile',
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -96,7 +96,7 @@ export default function DashboardSidebar({ user }: DashboardSidebarProps) {
             <p className="text-sm text-gray-500 truncate">{user.email}</p>
             <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full mt-2 ${
               user.role === 'admin' 
-                ? 'bg-purple-100 text-purple-800' 
+                ? 'bg-gray-100 text-gray-800' 
                 : 'bg-gray-100 text-gray-800'
             }`}>
               {user.role}

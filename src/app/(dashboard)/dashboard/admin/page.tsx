@@ -30,7 +30,6 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [regeneratingExcerpts, setRegeneratingExcerpts] = useState(false);
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalPosts: 0,
@@ -122,34 +121,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const regenerateExcerpts = async () => {
-    if (!confirm('Are you sure you want to regenerate excerpts for all posts? This will update existing excerpts to remove HTML tags.')) {
-      return;
-    }
 
-    setRegeneratingExcerpts(true);
-
-    try {
-      const res = await fetch('/api/posts/regenerate-excerpts', {
-        method: 'POST',
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        alert(`Successfully regenerated excerpts for ${data.updatedCount} posts!`);
-        // Refresh the data
-        fetchAdminData();
-      } else {
-        const errorData = await res.json();
-        alert(`Error: ${errorData.message}`);
-      }
-    } catch (error) {
-      console.error('Error regenerating excerpts:', error);
-      alert('Error regenerating excerpts. Please try again.');
-    } finally {
-      setRegeneratingExcerpts(false);
-    }
-  };
 
   if (status === 'loading' || loading) {
     return (
@@ -188,8 +160,8 @@ export default function AdminDashboard() {
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">Welcome, {session.user.name}</span>
               <Link
-                href="/profile"
-                className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200"
+                href="/dashboard/profile"
+                className="text-sm text-gray-600 hover:text-gray-800 transition-colors duration-200"
               >
                 Profile
               </Link>
@@ -209,8 +181,8 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                 </svg>
               </div>
@@ -223,8 +195,8 @@ export default function AdminDashboard() {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
@@ -237,8 +209,8 @@ export default function AdminDashboard() {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
@@ -250,30 +222,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* System Tools */}
-        <div className="bg-white rounded-lg shadow mb-8">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">System Tools</h2>
-            <p className="text-gray-600 mt-1">Maintenance and utility functions</p>
-          </div>
-          <div className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-medium text-gray-900">Regenerate Post Excerpts</h3>
-                <p className="text-gray-600 mt-1">
-                  Clean up HTML tags from existing post excerpts. This will update all posts to have clean, readable excerpts.
-                </p>
-              </div>
-              <button
-                onClick={regenerateExcerpts}
-                disabled={regeneratingExcerpts}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {regeneratingExcerpts ? 'Regenerating...' : 'Regenerate Excerpts'}
-              </button>
-            </div>
-          </div>
-        </div>
+
 
         {/* Users Management */}
         <div className="bg-white rounded-lg shadow mb-8">
@@ -302,7 +251,7 @@ export default function AdminDashboard() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                         user.role === 'admin' 
-                          ? 'bg-purple-100 text-purple-800' 
+                          ? 'bg-gray-100 text-gray-800' 
                           : 'bg-gray-100 text-gray-800'
                       }`}>
                         {user.role}
@@ -315,14 +264,14 @@ export default function AdminDashboard() {
                       {user.role === 'user' ? (
                         <button
                           onClick={() => updateUserRole(user._id, 'admin')}
-                          className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-md transition-colors cursor-pointer"
+                          className="text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 px-3 py-1 rounded-md transition-colors cursor-pointer"
                         >
                           Make Admin
                         </button>
                       ) : (
                         <button
                           onClick={() => updateUserRole(user._id, 'user')}
-                          className="text-yellow-600 hover:text-yellow-900 bg-yellow-50 hover:bg-yellow-100 px-3 py-1 rounded-md transition-colors cursor-pointer"
+                          className="text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 px-3 py-1 rounded-md transition-colors cursor-pointer"
                         >
                           Remove Admin
                         </button>
@@ -330,7 +279,7 @@ export default function AdminDashboard() {
                       {user._id !== session.user.id && (
                         <button
                           onClick={() => deleteUser(user._id)}
-                          className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md transition-colors cursor-pointer"
+                          className="text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 px-3 py-1 rounded-md transition-colors cursor-pointer"
                         >
                           Delete
                         </button>
@@ -373,7 +322,7 @@ export default function AdminDashboard() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <Link
                         href={`/blog/${post._id}`}
-                        className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-md transition-colors cursor-pointer"
+                        className="text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 px-3 py-1 rounded-md transition-colors cursor-pointer"
                       >
                         View
                       </Link>

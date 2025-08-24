@@ -66,9 +66,9 @@ export default function Navbar() {
                   Dashboard
                 </Link>
                 <Link 
-                  href="/profile" 
+                  href="/dashboard/profile" 
                   className={`transition-all duration-200 font-medium hover:text-gray-900 ${
-                    pathname === '/profile' 
+                    pathname === '/dashboard/profile' 
                       ? 'text-gray-900' 
                       : 'text-gray-600'
                   }`}
@@ -77,9 +77,9 @@ export default function Navbar() {
                 </Link>
                 {session.user.role === 'admin' && (
                   <Link 
-                    href="/admin" 
+                    href="/dashboard/admin" 
                     className={`transition-all duration-200 font-medium hover:text-gray-900 ${
-                      pathname === '/admin' 
+                      pathname === '/dashboard/admin' 
                         ? 'text-gray-900' 
                         : 'text-gray-600'
                     }`}
@@ -105,7 +105,7 @@ export default function Navbar() {
           <div className="md:hidden flex items-center space-x-3">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 hover:text-blue-600 focus:outline-none focus:text-blue-600 transition-colors"
+                              className="text-gray-700 hover:text-gray-900 focus:outline-none focus:text-gray-900 transition-colors"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {isMenuOpen ? (
@@ -193,10 +193,10 @@ export default function Navbar() {
                       </Link>
                       
                       <Link 
-                        href="/profile" 
+                        href="/dashboard/profile" 
                         onClick={toggleMenu}
                         className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 font-medium text-base ${
-                          pathname === '/profile' 
+                          pathname === '/dashboard/profile' 
                             ? 'text-gray-900 bg-gray-100 shadow-sm' 
                             : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 hover:shadow-sm'
                         }`}
@@ -209,10 +209,10 @@ export default function Navbar() {
                       
                       {session.user.role === 'admin' && (
                         <Link 
-                          href="/admin" 
+                          href="/dashboard/admin" 
                           onClick={toggleMenu}
                           className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 font-medium text-base ${
-                            pathname === '/admin' 
+                            pathname === '/dashboard/admin' 
                               ? 'text-gray-900 bg-gray-100 shadow-sm' 
                               : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 hover:shadow-sm'
                           }`}

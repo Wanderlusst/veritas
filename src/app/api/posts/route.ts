@@ -55,17 +55,28 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search') || '';
+    const author = searchParams.get('author') || '';
 
     const skip = (page - 1) * limit;
 
-    let query = {};
-    if (search) {
-      query = {
-        $or: [
-          { title: { $regex: search, $options: 'i' } },
-          { content: { $regex: search, $options: 'i' } }
-        ]
-      };
+    let query: any = {};
+    
+    // Build query based on search and author filters
+    if (search || author) {
+      query = { $and: [] };
+      
+      if (search) {
+        query.$and.push({
+          $or: [
+            { title: { $regex: search, $options: 'i' } },
+            { content: { $regex: search, $options: 'i' } }
+          ]
+        });
+      }
+      
+      if (author) {
+        query.$and.push({ author: author });
+      }
     }
 
     const posts = await Post.find(query)
